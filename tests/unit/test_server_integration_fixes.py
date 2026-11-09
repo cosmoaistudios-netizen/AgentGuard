@@ -477,16 +477,16 @@ class TestServerIntegrationFixes(unittest.IsolatedAsyncioTestCase):
     async def test_forensic_fixes_intent_drift_false_positives(self):
         """
         Verifies:
-        - IntentTracker().check_intent("s1", "zsh -c cd /Users/test && .venv/bin/ag siem setup --endpoint http://127.0.0.1:18443/audit") scores similarity >= 0.65
+        - IntentTracker().check_intent("s1", "zsh -c cd /home/test && .venv/bin/ag siem setup --endpoint http://127.0.0.1:18443/audit") scores similarity >= 0.65
         - IntentTracker().check_intent("s1", "zsh -c rm -f /tmp/test_artifact.json") scores similarity >= 0.65
-        - cd /Users/test && .venv/bin/ag audit --help scores similarity >= 0.65
+        - cd /home/test && .venv/bin/ag audit --help scores similarity >= 0.65
         """
         sess_id = "test-intent-fp-sess"
         self.intent_tracker.set_root_intent(sess_id, "Refactor and maintain agent security and build tools")
 
         ok1, sim1, msg1 = self.intent_tracker.check_intent(
             sess_id,
-            "zsh -c cd /Users/test && .venv/bin/ag siem setup --endpoint http://127.0.0.1:18443/audit",
+            "zsh -c cd /home/test && .venv/bin/ag siem setup --endpoint http://127.0.0.1:18443/audit",
         )
         self.assertTrue(ok1, f"Expected allowed, got {ok1} (msg: {msg1})")
         self.assertGreaterEqual(sim1, 0.65)
@@ -500,7 +500,7 @@ class TestServerIntegrationFixes(unittest.IsolatedAsyncioTestCase):
 
         ok3, sim3, msg3 = self.intent_tracker.check_intent(
             sess_id,
-            "cd /Users/test && .venv/bin/ag audit --help",
+            "cd /home/test && .venv/bin/ag audit --help",
         )
         self.assertTrue(ok3, f"Expected allowed, got {ok3} (msg: {msg3})")
         self.assertGreaterEqual(sim3, 0.65)

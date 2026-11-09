@@ -59,7 +59,7 @@ To run a specific test tier:
 | **R2** | Intent Drift Detector (Cosine Similarity $\ge 0.65$) | Tier 1, 2, 3 | **PASS** |
 | **R3** | POSIX Shell Shim (`ag-sh`) AST/Regex Command Classifier | Tier 1, 2, 3, 4 | **PASS** |
 | **R3** | Read-Only Fast Pass Sub-5ms SLA (< 1.5ms measured) | Tier 1, 4 | **PASS** |
-| **R3** | Dangerous Command Blocking (`[DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: [DISABLED COMMAND: rm -rf]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]`, `curl\|bash`, `~/.ssh`) | Tier 1, 2, 3, 4 | **PASS** |
+| **R3** | Dangerous Command Blocking (`rm -rf`, `curl\|bash`, `~/.ssh`) | Tier 1, 2, 3, 4 | **PASS** |
 | **R4** | Filesystem Memory Guard SHA-256 Provenance Stamping | Tier 1, 3, 4 | **PASS** |
 | **R4** | Instructional Stripper & Declarative Sanitization | Tier 1, 3, 4 | **PASS** |
 | **R5** | Benign Synthetic Test Fixtures & Network Isolation | All Tiers | **PASS** |
