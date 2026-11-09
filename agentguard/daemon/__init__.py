@@ -1,0 +1,98 @@
+"""AgentGuard Daemon subsystem."""
+
+from agentguard.daemon.audit import AuditEvent, AuditLogger
+from agentguard.daemon.command_classifier import (
+    ClassificationResult,
+    CommandClassifier,
+    CommandInvocation,
+    PolicyAction,
+    RiskVector,
+    ThreatLevel,
+)
+from agentguard.daemon.intent import CapabilityEnvelope, IntentTracker
+from agentguard.daemon.memory_guard import (
+    MemoryAction,
+    MemoryChunkRecord,
+    MemoryReadDecision,
+    MemoryWriteDecision,
+    VectorMemoryGuard,
+)
+from agentguard.daemon.policy_engine import (
+    ComplianceFrameworkTag,
+    PolicyDecision,
+    PolicyEngine,
+    PolicyRule,
+    RuleMatchCriteria,
+    parse_markdown_policy,
+)
+from agentguard.daemon.server import (
+    DEFAULT_HTTP_HOST,
+    DEFAULT_HTTP_PORT,
+    DEFAULT_PID_FILE,
+    DEFAULT_SOCKET_PATH,
+    DEFAULT_STREAM_LIMIT,
+    AgentGuardServer,
+    classify_command,
+    run_server,
+)
+from agentguard.daemon.taint_engine import (
+    EdgeType,
+    FileNode,
+    NodeType,
+    OperationType,
+    PolicyGateDecision,
+    ProcessNode,
+    SessionNode,
+    TaintEdge,
+    TaintEngine,
+    TaintNode,
+    TaintState,
+    TaintTag,
+)
+from agentguard.daemon.vault import SecretVault, compute_shannon_entropy
+
+__all__ = [
+    "AuditEvent",
+    "AuditLogger",
+    "AgentGuardServer",
+    "run_server",
+    "classify_command",
+    "DEFAULT_SOCKET_PATH",
+    "DEFAULT_HTTP_PORT",
+    "DEFAULT_HTTP_HOST",
+    "DEFAULT_PID_FILE",
+    "DEFAULT_STREAM_LIMIT",
+    "CommandClassifier",
+    "RiskVector",
+    "ThreatLevel",
+    "PolicyAction",
+    "ClassificationResult",
+    "CommandInvocation",
+    "TaintEngine",
+    "TaintState",
+    "TaintTag",
+    "NodeType",
+    "EdgeType",
+    "OperationType",
+    "PolicyGateDecision",
+    "TaintNode",
+    "SessionNode",
+    "ProcessNode",
+    "FileNode",
+    "TaintEdge",
+    "SecretVault",
+    "compute_shannon_entropy",
+    "IntentTracker",
+    "CapabilityEnvelope",
+    "PolicyEngine",
+    "PolicyRule",
+    "PolicyDecision",
+    "RuleMatchCriteria",
+    "ComplianceFrameworkTag",
+    "parse_markdown_policy",
+    "VectorMemoryGuard",
+    "MemoryAction",
+    "MemoryChunkRecord",
+    "MemoryWriteDecision",
+    "MemoryReadDecision",
+]

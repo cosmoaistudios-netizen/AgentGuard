@@ -1,0 +1,99 @@
+version: "1.0"
+name: enterprise-default-governance
+description: Enterprise zero-trust policy governance framework mapping to SOC2, HIPAA, ISO 27001, and GDPR.
+
+policies:
+  - id: rule-soc2-privilege-escalation
+    name: Restrict Privilege Escalation in Production
+    description: Prohibits sudo, root switching, and sensitive permission tampering in production environments under SOC2 CC6.1.
+    match:
+      profiles:
+        - "*"
+      command_patterns:
+        - 'sudo\s+'
+        - 'su\s+-'
+        - 'chmod\s+(?:-R\s+)?777'
+        - 'chmod\s+\+s'
+        - 'chown\s+root'
+    conditions:
+      - "environment in ['production', 'prod']"
+    action: BLOCK
+    compliance_tags:
+      - "SOC2-CC6.1"
+      - "ISO27001-A.9.4.2"
+    message: "SOC2-CC6.1 violation: Privilege escalation is strictly forbidden in production environments."
+
+  - id: rule-soc2-tainted-boundary-egress
+    name: Prevent Data Exfiltration on Tainted Sessions
+    description: Blocks outbound network egress commands when an agent has ingested untrusted content under SOC2 CC6.6.
+    match:
+      taint_states:
+        - "TAINTED"
+      command_patterns:
+        - 'curl\s+'
+        - 'wget\s+'
+        - 'nc\s+'
+        - 'netcat\s+'
+        - 'ssh\s+'
+        - 'scp\s+'
+        - 'ftp\s+'
+    conditions: []
+    action: BLOCK
+    compliance_tags:
+      - "SOC2-CC6.6"
+      - "ISO27001-A.12.1.2"
+    message: "SOC2-CC6.6 violation: Outbound network egress blocked on tainted session to prevent exfiltration."
+
+  - id: rule-hipaa-phi-pii-redaction
+    name: HIPAA PHI and PII Protection
+    description: Enforces technical safeguards and PII/PHI redaction on medical and confidential data queries under HIPAA 164.312.
+    match:
+      tools:
+        - "read_file"
+        - "patient_query"
+        - "fetch_records"
+        - "db_query"
+      command_patterns:
+        - '(?i)(patient|health|medical|diagnosis|prescription|ssn|mrn|phi)'
+    conditions:
+      - "requires_data_classification"
+    action: REDACT_PII
+    compliance_tags:
+      - "HIPAA-164.312"
+      - "GDPR-Art32"
+    message: "HIPAA-164.312 safeguard: Sensitive PII/PHI automatically redacted before agent consumption."
+
+  - id: rule-iso27001-off-hours-change-control
+    name: Off-Hours Production Change Control
+    description: Requires Human-in-the-Loop approval for production service alterations executed outside standard business hours under ISO 27001 A.12.1.2.
+    match:
+      command_patterns:
+        - 'systemctl\s+(?:restart|stop|reload|disable)'
+        - 'service\s+\w+\s+(?:restart|stop|reload)'
+        - 'docker\s+(?:rm|stop|kill)'
+        - 'kubectl\s+(?:delete|apply|scale)'
+    conditions:
+      - "environment in ['production', 'prod']"
+      - "after_hours"
+    action: REQUIRE_HITL
+    compliance_tags:
+      - "ISO27001-A.12.1.2"
+      - "SOC2-CC6.8"
+    message: "ISO27001-A.12.1.2 violation: Off-hours production service alteration requires operator approval."
+
+  - id: rule-gdpr-bulk-data-dump
+    name: GDPR Bulk Data Dump Protection
+    description: Blocks unrestricted bulk database exports and exfiltration attempts under GDPR Article 32.
+    match:
+      command_patterns:
+        - 'mysqldump\s+'
+        - 'pg_dump\s+'
+        - 'mongodump\s+'
+        - 'sqlite3\s+.*\.dump'
+    conditions:
+      - "taint_state == TAINTED"
+    action: BLOCK
+    compliance_tags:
+      - "GDPR-Art32"
+      - "SOC2-CC6.6"
+    message: "GDPR-Art32 violation: Bulk database extraction blocked on tainted agent session."

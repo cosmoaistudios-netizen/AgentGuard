@@ -1,0 +1,6 @@
+include README.md
+include pyproject.toml
+include setup.py
+recursive-include agentguard/profiles *.yaml *.yml
+recursive-include agentguard/interceptors/shim_binary *.c
+recursive-include tests *.py

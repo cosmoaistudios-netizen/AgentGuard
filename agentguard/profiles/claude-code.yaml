@@ -1,0 +1,74 @@
+name: claude-code
+description: Zero-trust adapter profile for Anthropic Claude Code CLI
+agent_command: claude
+
+shell:
+  safe_commands:
+    - ls
+    - cat
+    - head
+    - tail
+    - pwd
+    - echo
+    - which
+    - whoami
+    - git status
+    - git diff
+    - git log
+    - git branch
+  dangerous_patterns:
+    - 'rm\s+-rf'
+    - 'curl.*\|\s*(?:ba)?sh'
+    - 'wget.*\|\s*(?:ba)?sh'
+    - '>\s*/dev/sd[a-z]'
+    - 'dd\s+if='
+    - 'chmod\s+(?:-R\s+)?777'
+    - ':\(\)\s*\{'
+    - '\.ssh(?:/|$)'
+    - '\.aws(?:/|$)'
+    - '\.env(?:/|$)'
+  block_tainted_only: true
+  hitl_prompt: false
+
+vault:
+  enabled: true
+  entropy_threshold: 4.2
+  min_token_length: 24
+  whitelisted_endpoints:
+    - https://api.anthropic.com
+    - https://stats.anthropic.com
+  custom_patterns:
+    - 'sk-ant-api[0-9]{2}-[a-zA-Z0-9_-]{86,}'
+    - 'sk-[a-zA-Z0-9_-]{20,}'
+    - 'gh[pousr]_[A-Za-z0-9_]{36,}'
+    - 'AKIA[0-9A-Z]{16}'
+  token_prefix: AG_VAULT_TOKEN
+
+intent:
+  enabled: true
+  drift_threshold: 0.65
+  block_on_drift: false
+
+filesystem:
+  monitored_paths:
+    - .
+    - .claude
+  monitored_extensions:
+    - .md
+    - .json
+    - .ts
+    - .js
+    - .py
+    - .sh
+    - .txt
+    - .yaml
+    - .yml
+  instructional_stripper:
+    enabled: true
+    patterns:
+      - '(?i)(ignore\s+(?:all\s+)?previous\s+instructions)'
+      - '(?i)(system\s*override)'
+      - '(?i)(execute\s+the\s+following)'
+      - '(?i)(disregard\s+(?:all\s+)?prior)'
+    replacement_tag: '[DECLARATIVE INACTIVE TEXT: MATCH]'
+  provenance_stamping: true

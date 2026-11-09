@@ -1,0 +1,2660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentGuard Enterprise Operations Console</title>
+  <style>
+    :root {
+      --bg: #090a0f;
+      --surface: #10121a;
+      --surface-elevated: #161924;
+      --surface-hover: #1c202e;
+      --inset: #0c0e15;
+      --border: #1e2230;
+      --border-subtle: #151824;
+      --border-focus: #3b82f6;
+      --text: #f3f4f6;
+      --text-muted: #8b92a5;
+      --text-dim: #5a6275;
+
+      /* Semantic Status Colors */
+      --green: #10b981;
+      --green-bg: rgba(16, 185, 129, 0.12);
+      --green-border: rgba(16, 185, 129, 0.28);
+
+      --red: #f43f5e;
+      --red-bg: rgba(244, 63, 94, 0.12);
+      --red-border: rgba(244, 63, 94, 0.28);
+
+      --amber: #f59e0b;
+      --amber-bg: rgba(245, 158, 11, 0.12);
+      --amber-border: rgba(245, 158, 11, 0.28);
+
+      --blue: #3b82f6;
+      --blue-bg: rgba(59, 130, 246, 0.12);
+      --blue-border: rgba(59, 130, 246, 0.28);
+
+      --cyan: #06b6d4;
+      --cyan-bg: rgba(6, 182, 212, 0.12);
+      --cyan-border: rgba(6, 182, 212, 0.28);
+
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; width: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 12px;
+      line-height: 1.45;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #262c3d; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #373e54; }
+
+    .mono { font-family: var(--font-mono); font-size: 11px; }
+
+    /* Top App Bar (48px) */
+    header {
+      height: 48px;
+      min-height: 48px;
+      max-height: 48px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+    .brand-wrap { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: var(--blue);
+      stroke-width: 2.2;
+      flex-shrink: 0;
+    }
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+    }
+    .tag-enterprise {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: var(--blue-bg);
+      color: var(--blue);
+      border: 1px solid var(--blue-border);
+      font-family: var(--font-mono);
+      letter-spacing: 0.3px;
+    }
+    .env-pill {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--inset);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      border: 1px solid transparent;
+    }
+    .status-badge.healthy { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
+    .status-badge.degraded { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-border); }
+    .status-badge.offline { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 6px currentColor;
+      animation: pulse-glow 2s infinite ease-in-out;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    .uptime-box {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--inset);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .uptime-box strong { color: var(--text); }
+    .btn-header {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-header:hover { background: var(--surface-hover); border-color: var(--blue); color: var(--blue); }
+
+    /* Compact KPI Strip (64px) */
+    .kpi-strip {
+      height: 64px;
+      min-height: 64px;
+      max-height: 64px;
+      background: var(--border);
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1px;
+      flex-shrink: 0;
+    }
+    .metric-card {
+      background: var(--surface);
+      padding: 8px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+      min-width: 0;
+      transition: background 0.15s;
+    }
+    .metric-card:hover { background: var(--surface-elevated); }
+    .metric-title {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .metric-value {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.15;
+      letter-spacing: -0.3px;
+    }
+    .metric-sub {
+      font-size: 10px;
+      color: var(--text-dim);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .drift-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--inset);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 2px;
+      border: 1px solid var(--border-subtle);
+    }
+    .drift-fill {
+      height: 100%;
+      background: var(--cyan);
+      width: 100%;
+      transition: width 0.3s ease, background-color 0.3s ease;
+    }
+
+    /* Auto-Collapsing HITL Banner */
+    #hitl-section {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      transition: height 0.25s ease, padding 0.25s ease;
+      flex-shrink: 0;
+    }
+    #hitl-section.collapsed {
+      height: 32px;
+      min-height: 32px;
+      max-height: 32px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-left: 3px solid var(--green);
+    }
+    #hitl-section.expanded {
+      height: auto;
+      min-height: 58px;
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border-left: 4px solid var(--amber);
+      background: rgba(245, 158, 11, 0.04);
+    }
+    .hitl-empty-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .hitl-empty-bar .check-icon { color: var(--green); font-weight: 700; }
+    .hitl-header-expanded {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .hitl-title-expanded {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: var(--amber);
+    }
+    .hitl-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 10px;
+      width: 100%;
+    }
+    .hitl-card {
+      background: var(--inset);
+      border: 1px solid var(--amber-border);
+      border-left: 3px solid var(--amber);
+      border-radius: 5px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: opacity 0.2s;
+    }
+    .hitl-card.resolving { opacity: 0.35; pointer-events: none; }
+    .hitl-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .hitl-id { color: var(--amber); font-weight: 600; }
+    .hitl-cmd {
+      background: #05070c;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 6px 8px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #ff7b72;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 80px;
+      overflow-y: auto;
+    }
+    .hitl-reason { font-size: 11px; color: var(--text-muted); }
+    .hitl-btn-row { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+    .btn-approve {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: opacity 0.15s;
+    }
+    .btn-approve:hover { opacity: 0.88; }
+    .btn-deny {
+      background: var(--red);
+      color: #fff;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: opacity 0.15s;
+    }
+    .btn-deny:hover { opacity: 0.88; }
+    .btn-hitl-inspect {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+    }
+    .btn-hitl-inspect:hover { border-color: var(--blue); color: var(--blue); }
+
+    /* Main Split Workspace */
+    .workspace-split {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      gap: 12px;
+      padding: 12px 16px;
+      min-height: 0;
+      overflow: hidden;
+    }
+    @media (max-width: 1120px) {
+      body { overflow-y: auto; }
+      .workspace-split { grid-template-columns: 1fr; overflow: visible; }
+      .kpi-strip { grid-template-columns: repeat(3, 1fr); height: auto; max-height: none; }
+    }
+    @media (max-width: 720px) {
+      .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* Common Card Styles */
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+    }
+    .section-header {
+      background: var(--surface-elevated);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text);
+      letter-spacing: -0.1px;
+    }
+    .badge-counter {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: var(--inset);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Left Deck */
+    .deck-left {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0;
+      overflow-y: auto;
+    }
+    #agents-section {
+      height: 220px;
+      min-height: 190px;
+      flex-shrink: 0;
+    }
+    .agents-scroll { flex: 1; overflow-y: auto; min-height: 0; }
+
+    /* Visual Deck */
+    .visual-deck {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .viz-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .viz-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .viz-title {
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text);
+    }
+    .viz-sub {
+      font-size: 10px;
+      color: var(--text-dim);
+      font-weight: 400;
+      font-family: var(--font-mono);
+    }
+    .timeline-legend {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+    .leg-item { display: inline-flex; align-items: center; gap: 4px; }
+    .leg-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+    .dot-allowed { background: var(--green); }
+    .dot-blocked { background: var(--red); }
+    .dot-taint { background: var(--amber); }
+    .dot-vault { background: var(--blue); }
+    .rate-badge {
+      background: var(--inset);
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      height: 110px;
+      background: var(--inset);
+      border-radius: 4px;
+      border: 1px solid var(--border-subtle);
+      overflow: hidden;
+    }
+    #timeline-canvas { width: 100%; height: 100%; display: block; }
+    .chart-tooltip {
+      position: absolute;
+      background: rgba(16, 18, 26, 0.96);
+      border: 1px solid var(--border-focus);
+      border-radius: 4px;
+      padding: 5px 8px;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text);
+      pointer-events: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      z-index: 10;
+      transform: translate(-50%, -115%);
+      white-space: nowrap;
+    }
+
+    /* Gauge Deck */
+    .gauge-deck {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 12px;
+      align-items: center;
+      height: 95px;
+    }
+    .radial-gauge-wrap { position: relative; width: 120px; height: 80px; margin: 0 auto; }
+    .radial-gauge-svg { width: 100%; height: 100%; overflow: visible; }
+    .gauge-center-text { font-family: var(--font-mono); font-size: 18px; font-weight: 700; fill: var(--text); }
+    .gauge-center-sub { font-family: var(--font-mono); font-size: 8px; fill: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+    .gauge-metrics { display: flex; flex-direction: column; gap: 6px; justify-content: center; }
+    .g-metric { display: flex; flex-direction: column; gap: 2px; }
+    .g-top { display: flex; justify-content: space-between; font-size: 10px; }
+    .g-label { color: var(--text-muted); font-size: 10px; }
+    .g-val { font-size: 10px; color: var(--text); font-weight: 600; }
+    .micro-bar { width: 100%; height: 4px; background: var(--inset); border-radius: 2px; overflow: hidden; border: 1px solid var(--border-subtle); }
+    .micro-fill { height: 100%; border-radius: 2px; transition: width 0.3s ease; }
+
+    /* Right Deck: Live Telemetry Feed */
+    .deck-right {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: 100%;
+    }
+    #telemetry-section {
+      height: 100%;
+      flex: 1;
+    }
+    .feed-toolbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 7px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .toolbar-l { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1; }
+    .search-box { position: relative; min-width: 200px; max-width: 320px; flex: 1; }
+    .search-input {
+      width: 100%;
+      background: var(--inset);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 4px 8px;
+      color: var(--text);
+      font-size: 11px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-input:focus { border-color: var(--blue); }
+    .search-input::placeholder { color: var(--text-dim); }
+
+    .filter-group { display: flex; align-items: center; gap: 4px; }
+    .btn-filter {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .btn-filter:hover { background: var(--surface-hover); color: var(--text); }
+    .btn-filter.active {
+      background: var(--blue-bg);
+      color: var(--blue);
+      border-color: var(--blue-border);
+    }
+    .filter-count {
+      margin-left: 3px;
+      font-weight: 700;
+      opacity: 0.9;
+    }
+    .btn-filter.active .filter-count {
+      color: var(--blue);
+      opacity: 1;
+    }
+
+    .toolbar-r { display: flex; align-items: center; gap: 6px; }
+    .btn-tool {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .btn-tool:hover { background: var(--surface-hover); color: var(--text); }
+    .btn-tool.active {
+      background: var(--green-bg);
+      color: var(--green);
+      border-color: var(--green-border);
+    }
+
+    .events-scroll { flex: 1; overflow-y: auto; min-height: 0; }
+
+    /* Tables */
+    .table-wrap { width: 100%; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 11px; }
+    th {
+      background: var(--surface-elevated);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text);
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    tr:hover td { background: var(--surface-hover); }
+    tr.clickable-row { cursor: pointer; }
+    tr.clickable-row:hover td { background: rgba(59, 130, 246, 0.06); }
+
+    /* Compact Density Mode */
+    .table-wrap.dense table th { padding: 4px 8px; font-size: 9px; }
+    .table-wrap.dense table td { padding: 4px 8px; font-size: 10px; }
+    .table-wrap.dense .btn-agent { padding: 1px 5px; font-size: 9px; }
+    .table-wrap.dense .btn-row-inspect { padding: 1px 5px; font-size: 9px; }
+
+    /* Badges */
+    .badge-clean {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid var(--green-border);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+    .badge-tainted {
+      background: var(--amber-bg);
+      color: var(--amber);
+      border: 1px solid var(--amber-border);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+    .badge-radiation {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+    }
+    .badge-radiation.clean { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
+    .badge-radiation.tainted { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-border); }
+
+    .ev-badge {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      border: 1px solid transparent;
+    }
+    .ev-badge.blocked { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
+    .ev-badge.vault { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
+    .ev-badge.taint { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-border); }
+    .ev-badge.hitl { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-border); }
+    .ev-badge.pass { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
+    .ev-badge.info { background: var(--surface-elevated); color: var(--text-muted); border-color: var(--border); }
+
+    .tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: var(--inset);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    /* Buttons */
+    .btn-agent {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      margin-right: 3px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-agent:hover { background: var(--surface-hover); border-color: var(--blue); color: var(--blue); }
+    .btn-agent.pause { color: var(--amber); border-color: var(--amber-border); }
+    .btn-agent.pause:hover { background: var(--amber-bg); }
+    .btn-agent.resume { color: var(--green); border-color: var(--green-border); }
+    .btn-agent.resume:hover { background: var(--green-bg); }
+    .btn-agent.terminate { color: var(--red); border-color: var(--red-border); }
+    .btn-agent.terminate:hover { background: var(--red-bg); }
+
+    .btn-row-inspect {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 10px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-row-inspect:hover { background: var(--surface-hover); border-color: var(--blue); color: var(--blue); }
+
+    .event-details {
+      max-width: 480px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .kbd-shortcut-hint {
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+    kbd {
+      background: var(--inset);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 4px;
+      font-size: 9px;
+      color: var(--text-muted);
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(9, 10, 15, 0.78);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      width: 100%;
+      max-width: 720px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+      overflow: hidden;
+      animation: modalFadeIn 0.18s ease-out;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-header {
+      background: var(--surface-elevated);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-header h3 {
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+    }
+    .btn-modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+    }
+    .btn-modal-close:hover { color: var(--text); }
+    .modal-body {
+      padding: 14px 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .modal-footer {
+      border-top: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface-elevated);
+    }
+
+    .detail-card {
+      background: var(--inset);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .detail-card-title {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .cmd-box {
+      background: #04060a;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #93c5fd;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 140px;
+      overflow-y: auto;
+      line-height: 1.4;
+      user-select: text;
+    }
+    .cmd-box.blocked {
+      border-color: var(--red-border);
+      color: #fca5a5;
+      background: rgba(244, 63, 94, 0.05);
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      font-size: 11px;
+    }
+    .info-item { display: flex; flex-direction: column; gap: 2px; }
+    .info-label { font-size: 10px; color: var(--text-dim); }
+    .info-value { color: var(--text); font-weight: 500; word-break: break-all; }
+    .provenance-chain {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+    }
+    .prov-node {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 4px;
+      color: var(--text-muted);
+    }
+    .prov-node.tainted { border-color: var(--amber); color: var(--amber); background: var(--amber-bg); }
+    .prov-node.current { border-color: var(--blue); color: var(--blue); font-weight: 600; }
+    .prov-arrow { color: var(--text-dim); }
+    .json-code {
+      background: #04060a;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      max-height: 140px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Toasts */
+    #toast-container {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 2000;
+    }
+    .toast {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 8px 14px;
+      font-size: 11px;
+      color: var(--text);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 200px;
+      animation: toastIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes toastIn {
+      from { transform: translateX(20px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .toast.success { border-left: 3px solid var(--green); }
+    .toast.error { border-left: 3px solid var(--red); }
+    .toast.info { border-left: 3px solid var(--blue); }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Bar (48px) -->
+  <header>
+    <div class="brand-wrap">
+      <svg class="brand-logo" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4" stroke="#10b981" stroke-width="2.5"/></svg>
+      <div class="brand-title">
+        AgentGuard
+        <span class="tag-enterprise">v2.0 Enterprise</span>
+      </div>
+      <span class="env-pill mono">LOCAL KERNEL &bull; 127.0.0.1:18443</span>
+    </div>
+    <div class="header-actions">
+      <div id="system-status-badge" class="status-badge healthy">
+        <span class="pulse-dot"></span>
+        <span id="system-status-text">HEALTHY</span>
+      </div>
+      <div id="sse-connection-badge" class="status-badge healthy">
+        <span class="pulse-dot"></span>
+        <span id="sse-connection-text">&bull; LIVE SSE</span>
+      </div>
+      <div class="uptime-box mono">
+        <span>UPTIME</span> <strong id="system-uptime">00:00:00</strong>
+      </div>
+      <button class="btn-header" onclick="manualRefresh()" title="Sync state with daemon">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+        Sync
+      </button>
+    </div>
+  </header>
+
+  <!-- Compact KPI Strip (64px) -->
+  <section class="kpi-strip">
+    <div class="metric-card">
+      <div class="metric-title">Active Agents</div>
+      <div class="metric-value mono" id="metric-active-agents">0</div>
+      <div class="metric-sub">Monitored PIDs &amp; sessions</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">Tainted Sessions</div>
+      <div class="metric-value mono" id="metric-tainted-sessions">0</div>
+      <div class="metric-sub">Radiation DAG propagated</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">Vaulted Secrets</div>
+      <div class="metric-value mono" id="metric-vaulted-secrets">0</div>
+      <div class="metric-sub mono">&lt;AG_VAULT_xx&gt; shielded</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">Blocked Exploits</div>
+      <div class="metric-value mono" id="metric-blocked-exploits">0</div>
+      <div class="metric-sub">Zero-trust policy drops</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">Kernel Memory RSS</div>
+      <div class="metric-value mono" id="metric-memory-rss">0.0 <span style="font-size:11px;color:var(--text-muted);">MB</span></div>
+      <div class="metric-sub">Budget: &lt; 100 MB</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">Intent Alignment</div>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;">
+        <div class="metric-value mono" id="metric-intent-drift">1.00</div>
+        <div class="metric-sub" id="drift-status-label">Cosine: SAFE (&ge; 0.65)</div>
+      </div>
+      <div class="drift-bar"><div class="drift-fill" id="drift-progress-bar"></div></div>
+    </div>
+  </section>
+
+  <!-- Auto-Collapsing HITL Banner -->
+  <section id="hitl-section" class="collapsed">
+    <div id="hitl-empty-state" class="hitl-empty-bar">
+      <span class="check-icon">&check;</span>
+      <span>Autonomous Policy Enforcement Active &mdash; 0 Pending Operator Approvals</span>
+    </div>
+    <div id="hitl-header-expanded" class="hitl-header-expanded" style="display:none;">
+      <div class="hitl-title-expanded">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Pending Human-In-The-Loop Approvals Required
+      </div>
+    </div>
+    <div id="hitl-cards-container" class="hitl-grid" style="display:none;"></div>
+    <span class="badge-counter mono" id="hitl-counter">0 PENDING</span>
+  </section>
+
+  <!-- Main Split Workspace -->
+  <main class="workspace-split">
+
+    <!-- Left Column: Active Wrapped Agents & Visual Gauges -->
+    <div class="deck-left">
+
+      <!-- Active Wrapped Agents Section -->
+      <section class="section-card" id="agents-section">
+        <div class="section-header">
+          <div class="section-title">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            Active Wrapped Agents
+          </div>
+          <span class="badge-counter mono" id="agents-count-badge">0 AGENTS</span>
+        </div>
+        <div class="table-wrap agents-scroll">
+          <table id="agents-table">
+            <thead>
+              <tr>
+                <th>Session ID</th>
+                <th>PID</th>
+                <th>Profile</th>
+                <th>Status</th>
+                <th>Taint</th>
+                <th>CPU</th>
+                <th>RSS</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="agents-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Visual Deck: Live Activity Timeline & Radial Gauge -->
+      <div class="visual-deck">
+        <!-- Activity & Threat Timeline Canvas -->
+        <div class="viz-card timeline-card">
+          <div class="viz-header">
+            <div class="viz-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <span>Activity &amp; Threat Velocity</span>
+              <span class="viz-sub">(Rolling 60s)</span>
+            </div>
+            <div class="timeline-legend">
+              <span class="leg-item"><span class="leg-dot dot-allowed"></span> Allowed</span>
+              <span class="leg-item"><span class="leg-dot dot-blocked"></span> Blocked</span>
+              <span class="leg-item"><span class="leg-dot dot-taint"></span> Taint</span>
+              <span class="leg-item"><span class="leg-dot dot-vault"></span> Vault</span>
+              <span class="rate-badge mono" id="live-rate-badge">0.0 ev/s</span>
+            </div>
+          </div>
+          <div class="canvas-container" id="timeline-container">
+            <canvas id="timeline-canvas"></canvas>
+            <div id="timeline-tooltip" class="chart-tooltip" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- Fleet Taint & Blast Radius Gauges -->
+        <div class="viz-card radiation-card">
+          <div class="viz-header">
+            <div class="viz-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10M12 22a10 10 0 0 1-10-10"/></svg>
+              <span>Fleet Taint &amp; Blast Radius</span>
+            </div>
+            <span class="badge-radiation clean" id="fleet-radiation-badge">CLEAN</span>
+          </div>
+          <div class="gauge-deck">
+            <div class="radial-gauge-wrap">
+              <svg class="radial-gauge-svg" viewBox="0 0 160 100" id="radiation-gauge-svg">
+                <path class="gauge-bg" d="M 20 85 A 60 60 0 0 1 140 85" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="12" stroke-linecap="round"/>
+                <path class="gauge-fill" id="gauge-fill-path" d="M 20 85 A 60 60 0 0 1 140 85" fill="none" stroke="var(--green)" stroke-width="12" stroke-dasharray="188.5" stroke-dashoffset="188.5" stroke-linecap="round" style="transition: stroke-dashoffset 0.4s ease, stroke 0.4s ease;"/>
+                <text x="80" y="74" text-anchor="middle" class="gauge-center-text" id="gauge-center-val">0%</text>
+                <text x="80" y="90" text-anchor="middle" class="gauge-center-sub" id="gauge-center-sub">0 TAINTED</text>
+              </svg>
+            </div>
+            <div class="gauge-metrics">
+              <div class="g-metric">
+                <div class="g-top"><span class="g-label">Kernel Latency</span><span class="g-val mono" id="gauge-latency-val">&lt; 0.5 ms</span></div>
+                <div class="micro-bar"><div class="micro-fill" id="micro-latency-fill" style="width: 25%; background: var(--green);"></div></div>
+              </div>
+              <div class="g-metric">
+                <div class="g-top"><span class="g-label">Vault Velocity</span><span class="g-val mono" id="gauge-vault-val">0 tokens</span></div>
+                <div class="micro-bar"><div class="micro-fill" id="micro-vault-fill" style="width: 10%; background: var(--blue);"></div></div>
+              </div>
+              <div class="g-metric">
+                <div class="g-top"><span class="g-label">Fleet Capability</span><span class="g-val mono" id="gauge-capability-val">Unrestricted</span></div>
+                <div class="micro-bar"><div class="micro-fill" id="micro-cap-fill" style="width: 100%; background: var(--green);"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Right Column: Live Audited Telemetry Feed Table -->
+    <div class="deck-right">
+      <section class="section-card" id="telemetry-section">
+        <div class="section-header">
+          <div class="section-title">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Live Audited Telemetry Feed
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="kbd-shortcut-hint mono"><kbd>/</kbd> Search &bull; <kbd>1-5</kbd> Filter &bull; <kbd>Space</kbd> Pause</span>
+            <span class="badge-counter mono" id="events-counter">0 EVENTS</span>
+          </div>
+        </div>
+        <div class="feed-toolbar">
+          <div class="toolbar-l">
+            <div class="search-box">
+              <input type="text" id="search-input" class="search-input mono" placeholder="Filter commands, PID, policy rule... [/]" oninput="handleSearch(this.value)">
+            </div>
+            <div class="filter-group">
+              <button class="btn-filter active" data-filter="ALL" onclick="setFilter('ALL', this)" title="Filter ALL events [Key: 1]">ALL <span class="filter-count mono" id="count-all">[0]</span></button>
+              <button class="btn-filter" data-filter="BLOCKED" onclick="setFilter('BLOCKED', this)" title="Filter BLOCKED events [Key: 2]">BLOCKED <span class="filter-count mono" id="count-blocked">[0]</span></button>
+              <button class="btn-filter" data-filter="TAINT" onclick="setFilter('TAINT', this)" title="Filter TAINT events [Key: 3]">TAINT <span class="filter-count mono" id="count-taint">[0]</span></button>
+              <button class="btn-filter" data-filter="VAULT" onclick="setFilter('VAULT', this)" title="Filter VAULT events [Key: 4]">VAULT <span class="filter-count mono" id="count-vault">[0]</span></button>
+              <button class="btn-filter" data-filter="HITL" onclick="setFilter('HITL', this)" title="Filter HITL events [Key: 5]">HITL <span class="filter-count mono" id="count-hitl">[0]</span></button>
+              <button class="btn-filter" data-filter="SYSTEM" onclick="setFilter('SYSTEM', this)" title="Filter SYSTEM events">SYSTEM <span class="filter-count mono" id="count-system">[0]</span></button>
+            </div>
+          </div>
+          <div class="toolbar-r">
+            <button id="btn-density-toggle" class="btn-tool" onclick="toggleDensity()" title="Toggle row height density">Density: Comfortable</button>
+            <button id="btn-autoscroll" class="btn-tool active" onclick="toggleAutoScroll()" title="Toggle auto-scrolling">Auto-Scroll: ON</button>
+            <button id="btn-export-json" class="btn-tool" onclick="exportJSON()" title="Export JSON">JSON</button>
+            <button id="btn-export-csv" class="btn-tool" onclick="exportCSV()" title="Export CSV">CSV</button>
+            <button class="btn-tool" onclick="clearTelemetryDisplay()" title="Clear display buffer">Clear</button>
+          </div>
+        </div>
+        <div class="events-scroll table-wrap" id="events-scroll-container">
+          <table id="events-table">
+            <thead>
+              <tr>
+                <th style="width: 90px;">Time</th>
+                <th style="width: 120px;">Event Type</th>
+                <th style="width: 150px;">Session / PID</th>
+                <th style="width: 85px;">Status</th>
+                <th>Command &bull; Security Action Details</th>
+                <th style="width: 70px; text-align: right;">Inspect</th>
+              </tr>
+            </thead>
+            <tbody id="events-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- Command & Telemetry Inspection Modal -->
+  <div id="inspect-modal" class="modal-backdrop" onclick="handleBackdropClick(event, 'inspect-modal')">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-event-title">
+      <div class="modal-header">
+        <h3 id="modal-event-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          Command &amp; Security Telemetry Inspector
+        </h3>
+        <button class="btn-modal-close" onclick="closeModal('inspect-modal')" title="Close [ESC]">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Command Box -->
+        <div class="detail-card">
+          <div class="detail-card-title">
+            <span>Intercepted Command Line (Full)</span>
+            <button class="btn-agent" id="btn-copy-cmd" onclick="copyModalCommand()">Copy Command</button>
+          </div>
+          <div class="cmd-box" id="modal-cmd-text">--</div>
+        </div>
+
+        <!-- Evaluation Verdict -->
+        <div class="detail-card">
+          <div class="detail-card-title">Security Evaluation &amp; Verdict</div>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Event Type</span>
+              <span class="info-value" id="modal-ev-type">--</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Evaluation Status</span>
+              <span class="info-value" id="modal-status">--</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Session ID</span>
+              <span class="info-value mono" id="modal-session-id">--</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Target PID / PPID</span>
+              <span class="info-value mono" id="modal-pid">--</span>
+            </div>
+            <div class="info-item" style="grid-column: 1 / -1;">
+              <span class="info-label">Policy Reason / Rule</span>
+              <span class="info-value" id="modal-reason" style="color:var(--amber);">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Provenance and Taint Context -->
+        <div class="detail-card" id="modal-taint-card">
+          <div class="detail-card-title">Provenance &amp; Taint Tracking</div>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Taint Status</span>
+              <span class="info-value" id="modal-taint-status">--</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Intent Drift / Similarity</span>
+              <span class="info-value" id="modal-intent-sim">--</span>
+            </div>
+          </div>
+          <div class="info-item" style="margin-top:4px;">
+            <span class="info-label">Provenance Chain</span>
+            <div class="provenance-chain" id="modal-provenance-chain">
+              <span class="prov-node">session:origin</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Raw Event Payload -->
+        <div class="detail-card">
+          <div class="detail-card-title">
+            <span>Raw Audit Telemetry JSON</span>
+            <button class="btn-agent" id="btn-copy-json" onclick="copyModalJson()">Copy JSON</button>
+          </div>
+          <pre class="json-code" id="modal-json-text"></pre>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <div id="modal-quick-actions" style="display:flex;gap:6px;"></div>
+        <button class="btn-agent" onclick="closeModal('inspect-modal')">Close [ESC]</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agent Deep Inspection Modal -->
+  <div id="agent-inspect-modal" class="modal-backdrop" onclick="handleBackdropClick(event, 'agent-inspect-modal')">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-agent-title">
+      <div class="modal-header">
+        <h3 id="modal-agent-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/></svg>
+          Agent Process &amp; Taint Inspector
+        </h3>
+        <button class="btn-modal-close" onclick="closeModal('agent-inspect-modal')" title="Close [ESC]">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Process Profile Summary -->
+        <div class="detail-card">
+          <div class="detail-card-title">Process &amp; Profile Summary</div>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Session ID</span>
+              <span class="info-value mono" id="aim-session-id">--</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">PID / Wrapper PID</span>
+              <span class="info-value mono" id="aim-pid">--</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Profile</span>
+              <span class="info-value" id="aim-profile">--</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Current Execution Status</span>
+              <span class="info-value" id="aim-status">--</span>
+            </div>
+            <div class="info-item" style="grid-column: 1 / -1;">
+              <span class="info-label">Working Directory</span>
+              <span class="info-value mono" id="aim-cwd" style="color:var(--blue);">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resource Usage & Taint Radiation -->
+        <div class="detail-card">
+          <div class="detail-card-title">Live Resource Usage &amp; Radiation Gauge</div>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">CPU Usage</span>
+              <span class="info-value mono" id="aim-cpu">0.0%</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Memory RSS</span>
+              <span class="info-value mono" id="aim-rss">0.0 MB</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Child Process Tree</span>
+              <span class="info-value mono" id="aim-children">0 child processes</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Taint Level</span>
+              <span class="info-value" id="aim-taint-meter">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Provenance DAG -->
+        <div class="detail-card">
+          <div class="detail-card-title">Session Provenance &amp; Root Intent</div>
+          <div class="info-item" style="margin-bottom:6px;">
+            <span class="info-label">Root Intent Envelope</span>
+            <div class="info-value" id="aim-root-intent" style="font-style:italic;">--</div>
+          </div>
+          <span class="info-label">Taint Propagation Lineage</span>
+          <div class="provenance-chain" id="aim-provenance-chain">
+            <span class="prov-node">--</span>
+          </div>
+        </div>
+
+        <!-- Recent Intercepted Commands -->
+        <div class="detail-card">
+          <div class="detail-card-title">Recent Intercepted Commands</div>
+          <div id="aim-commands-list" style="display:flex;flex-direction:column;gap:5px;max-height:180px;overflow-y:auto;">
+            <div style="color:var(--text-muted);font-size:11px;font-style:italic;">No commands recorded yet.</div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <div id="aim-control-buttons" style="display:flex;gap:6px;"></div>
+        <button class="btn-agent" onclick="closeModal('agent-inspect-modal')">Close [ESC]</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <!-- Dash logic & SSE Streaming -->
+  <script>
+    const state = {
+      events: [],
+      maxEvents: 1000,
+      activeFilter: 'ALL',
+      searchQuery: '',
+      autoScroll: true,
+      isDense: false,
+      uptimeSeconds: 0,
+      sseConnected: false,
+      sessions: {},
+      pendingHitl: {},
+      currentModalEvent: null,
+      currentModalAgent: null,
+      timelineBuckets: Array.from({ length: 60 }, () => ({
+        allowed: 0, blocked: 0, taint: 0, vault: 0, total: 0
+      })),
+      lastBucketSec: Math.floor(Date.now() / 1000)
+    };
+
+    const el = {
+      uptime: document.getElementById('system-uptime'),
+      statusBadge: document.getElementById('system-status-badge'),
+      statusText: document.getElementById('system-status-text'),
+      sseBadge: document.getElementById('sse-connection-badge'),
+      sseText: document.getElementById('sse-connection-text'),
+      activeAgents: document.getElementById('metric-active-agents'),
+      taintedSessions: document.getElementById('metric-tainted-sessions'),
+      vaultedSecrets: document.getElementById('metric-vaulted-secrets'),
+      blockedExploits: document.getElementById('metric-blocked-exploits'),
+      memoryRss: document.getElementById('metric-memory-rss'),
+      intentDrift: document.getElementById('metric-intent-drift'),
+      driftBar: document.getElementById('drift-progress-bar'),
+      driftLabel: document.getElementById('drift-status-label'),
+      hitlSection: document.getElementById('hitl-section'),
+      hitlHeaderExpanded: document.getElementById('hitl-header-expanded'),
+      hitlContainer: document.getElementById('hitl-cards-container'),
+      hitlEmpty: document.getElementById('hitl-empty-state'),
+      hitlCounter: document.getElementById('hitl-counter'),
+      agentsBody: document.getElementById('agents-body'),
+      agentsCount: document.getElementById('agents-count-badge'),
+      eventsBody: document.getElementById('events-body'),
+      eventsCounter: document.getElementById('events-counter'),
+      scrollContainer: document.getElementById('events-scroll-container'),
+      btnAutoScroll: document.getElementById('btn-autoscroll'),
+      btnDensity: document.getElementById('btn-density-toggle'),
+      timelineCanvas: document.getElementById('timeline-canvas'),
+      timelineContainer: document.getElementById('timeline-container'),
+      timelineTooltip: document.getElementById('timeline-tooltip'),
+      liveRateBadge: document.getElementById('live-rate-badge'),
+      gaugeFillPath: document.getElementById('gauge-fill-path'),
+      gaugeCenterVal: document.getElementById('gauge-center-val'),
+      gaugeCenterSub: document.getElementById('gauge-center-sub'),
+      fleetRadiationBadge: document.getElementById('fleet-radiation-badge'),
+      gaugeLatencyVal: document.getElementById('gauge-latency-val'),
+      microLatencyFill: document.getElementById('micro-latency-fill'),
+      gaugeVaultVal: document.getElementById('gauge-vault-val'),
+      microVaultFill: document.getElementById('micro-vault-fill'),
+      gaugeCapabilityVal: document.getElementById('gauge-capability-val'),
+      microCapFill: document.getElementById('micro-cap-fill'),
+      filterCountAll: document.getElementById('count-all'),
+      filterCountBlocked: document.getElementById('count-blocked'),
+      filterCountTaint: document.getElementById('count-taint'),
+      filterCountVault: document.getElementById('count-vault'),
+      filterCountHitl: document.getElementById('count-hitl'),
+      filterCountSystem: document.getElementById('count-system')
+    };
+
+    function initDashboard() {
+      initTimelineCanvas();
+      setupEventSource();
+      syncStatus();
+      syncAuditHistory();
+      updateFilterCounters();
+
+      setInterval(() => {
+        state.uptimeSeconds++;
+        el.uptime.textContent = formatUptime(state.uptimeSeconds);
+        advanceTimelineBuckets();
+        renderTimelineCanvas();
+      }, 1000);
+
+      setInterval(syncStatus, 4000);
+
+      // Keyboard navigation shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+          if (e.key === 'Escape') e.target.blur();
+          return;
+        }
+        if (e.key === '/') {
+          e.preventDefault();
+          document.getElementById('search-input')?.focus();
+        } else if (e.key === '1') {
+          const btn = document.querySelector('.btn-filter[data-filter="ALL"]');
+          if (btn) setFilter('ALL', btn);
+        } else if (e.key === '2') {
+          const btn = document.querySelector('.btn-filter[data-filter="BLOCKED"]');
+          if (btn) setFilter('BLOCKED', btn);
+        } else if (e.key === '3') {
+          const btn = document.querySelector('.btn-filter[data-filter="TAINT"]');
+          if (btn) setFilter('TAINT', btn);
+        } else if (e.key === '4') {
+          const btn = document.querySelector('.btn-filter[data-filter="VAULT"]');
+          if (btn) setFilter('VAULT', btn);
+        } else if (e.key === '5') {
+          const btn = document.querySelector('.btn-filter[data-filter="HITL"]');
+          if (btn) setFilter('HITL', btn);
+        } else if (e.key === ' ') {
+          e.preventDefault();
+          toggleAutoScroll();
+        } else if (e.key === 'Escape') {
+          closeModal('inspect-modal');
+          closeModal('agent-inspect-modal');
+        }
+      });
+    }
+
+    /* -------------------------------------------------------------
+       Timeline Canvas & Visual Deck
+    ------------------------------------------------------------- */
+    function initTimelineCanvas() {
+      const container = el.timelineContainer;
+      const canvas = el.timelineCanvas;
+      if (!canvas || !container) return;
+
+      function resize() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = container.getBoundingClientRect();
+        canvas.width = Math.floor(rect.width * dpr);
+        canvas.height = Math.floor(rect.height * dpr);
+        renderTimelineCanvas();
+      }
+
+      const ro = new ResizeObserver(resize);
+      ro.observe(container);
+      resize();
+
+      container.addEventListener('mousemove', handleTimelineMouseMove);
+      container.addEventListener('mouseleave', () => {
+        if (el.timelineTooltip) el.timelineTooltip.style.display = 'none';
+      });
+    }
+
+    function advanceTimelineBuckets() {
+      const nowSec = Math.floor(Date.now() / 1000);
+      const diff = nowSec - state.lastBucketSec;
+      if (diff > 0) {
+        const shiftCount = Math.min(60, diff);
+        for (let i = 0; i < shiftCount; i++) {
+          state.timelineBuckets.shift();
+          state.timelineBuckets.push({ allowed: 0, blocked: 0, taint: 0, vault: 0, total: 0 });
+        }
+        state.lastBucketSec = nowSec;
+      }
+
+      // Calculate recent rate over last 10s
+      const recent10 = state.timelineBuckets.slice(-10);
+      const sumRecent = recent10.reduce((acc, b) => acc + b.total, 0);
+      const rate = (sumRecent / 10.0).toFixed(1);
+      if (el.liveRateBadge) el.liveRateBadge.textContent = `${rate} ev/s`;
+    }
+
+    function recordEventInTimeline(item) {
+      const ev = (item.event_type || '').toUpperCase();
+      const st = (item.status || '').toUpperCase();
+      const last = state.timelineBuckets[state.timelineBuckets.length - 1];
+      if (!last) return;
+
+      last.total++;
+      if (st === 'BLOCKED' || ev.includes('BLOCKED')) {
+        last.blocked++;
+      } else if (st === 'TAINTED' || ev.includes('TAINT')) {
+        last.taint++;
+      } else if (st === 'VAULT' || ev.includes('VAULT') || ev.includes('TOKEN')) {
+        last.vault++;
+      } else {
+        last.allowed++;
+      }
+    }
+
+    function renderTimelineCanvas() {
+      const canvas = el.timelineCanvas;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr;
+      const h = canvas.height / dpr;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const buckets = state.timelineBuckets;
+      const n = buckets.length;
+      let maxVal = 4;
+      for (let i = 0; i < n; i++) {
+        if (buckets[i].total > maxVal) maxVal = buckets[i].total;
+      }
+      maxVal = Math.ceil(maxVal * 1.15);
+
+      // Grid lines
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      for (let level = 1; level <= 3; level++) {
+        const y = h - 18 - (level / 4) * (h - 26);
+        ctx.beginPath();
+        ctx.moveTo(30, y);
+        ctx.lineTo(w - 8, y);
+        ctx.stroke();
+
+        ctx.fillStyle = '#5a6275';
+        ctx.font = '8px monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(Math.round((level / 4) * maxVal).toString(), 26, y + 3);
+      }
+      ctx.setLineDash([]);
+
+      // Baseline
+      const baseY = h - 18;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.beginPath();
+      ctx.moveTo(30, baseY);
+      ctx.lineTo(w - 8, baseY);
+      ctx.stroke();
+
+      const stepX = (w - 38) / (n - 1);
+
+      // Render Area: Allowed
+      ctx.beginPath();
+      ctx.moveTo(30, baseY);
+      for (let i = 0; i < n; i++) {
+        const x = 30 + i * stepX;
+        const val = buckets[i].allowed;
+        const y = baseY - (val / maxVal) * (h - 26);
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(w - 8, baseY);
+      ctx.closePath();
+
+      const grad = ctx.createLinearGradient(0, 0, 0, baseY);
+      grad.addColorStop(0, 'rgba(16, 185, 129, 0.22)');
+      grad.addColorStop(1, 'rgba(16, 185, 129, 0.01)');
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Stroke Allowed Line
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const x = 30 + i * stepX;
+        const val = buckets[i].allowed;
+        const y = baseY - (val / maxVal) * (h - 26);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Render Spikes / Markers for Blocked, Taint, Vault
+      for (let i = 0; i < n; i++) {
+        const x = 30 + i * stepX;
+        const b = buckets[i];
+
+        // Blocked spikes (Rose)
+        if (b.blocked > 0) {
+          const barH = (b.blocked / maxVal) * (h - 26);
+          ctx.strokeStyle = '#f43f5e';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(x, baseY);
+          ctx.lineTo(x, baseY - Math.max(6, barH));
+          ctx.stroke();
+
+          ctx.fillStyle = '#f43f5e';
+          ctx.beginPath();
+          ctx.arc(x, baseY - Math.max(6, barH), 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Taint marker (Amber dot)
+        if (b.taint > 0) {
+          ctx.fillStyle = '#f59e0b';
+          ctx.beginPath();
+          ctx.arc(x, baseY - 5, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Vault marker (Blue dot)
+        if (b.vault > 0) {
+          ctx.fillStyle = '#3b82f6';
+          ctx.beginPath();
+          ctx.arc(x, baseY - 10, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Time labels
+      ctx.fillStyle = '#5a6275';
+      ctx.font = '8px monospace';
+      ctx.textAlign = 'center';
+      const labels = ['-60s', '-45s', '-30s', '-15s', 'Now'];
+      for (let li = 0; li < labels.length; li++) {
+        const lx = 30 + (li / 4) * (w - 38);
+        ctx.fillText(labels[li], lx, h - 6);
+      }
+
+      ctx.restore();
+    }
+
+    function handleTimelineMouseMove(e) {
+      const canvas = el.timelineCanvas;
+      const tooltip = el.timelineTooltip;
+      if (!canvas || !tooltip) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const w = rect.width;
+
+      if (x < 30 || x > w - 8) {
+        tooltip.style.display = 'none';
+        return;
+      }
+
+      const stepX = (w - 38) / 59;
+      const index = Math.max(0, Math.min(59, Math.round((x - 30) / stepX)));
+      const b = state.timelineBuckets[index];
+      if (!b) return;
+
+      const secAgo = 59 - index;
+      tooltip.style.display = 'block';
+      tooltip.style.left = `${x}px`;
+      tooltip.style.top = `${e.clientY - rect.top}px`;
+      tooltip.innerHTML = `
+        <div style="font-weight:700;color:var(--text);">${secAgo === 0 ? 'Current Second' : `-${secAgo}s ago`}</div>
+        <div style="color:var(--green);">Allowed: ${b.allowed}</div>
+        <div style="color:var(--red);">Blocked: ${b.blocked}</div>
+        <div style="color:var(--amber);">Taint: ${b.taint}</div>
+        <div style="color:var(--blue);">Vault: ${b.vault}</div>
+        <div style="color:var(--text-muted);border-top:1px solid var(--border);margin-top:2px;padding-top:2px;">Total: ${b.total} ev</div>
+      `;
+    }
+
+    function updateRadiationGauge(activeCount, taintedCount) {
+      const tot = Math.max(1, activeCount);
+      const ratio = Math.max(0, Math.min(1.0, taintedCount / tot));
+      const fullOffset = 188.5;
+      const targetOffset = fullOffset * (1.0 - ratio);
+
+      if (el.gaugeFillPath) {
+        el.gaugeFillPath.style.strokeDashoffset = targetOffset.toFixed(1);
+        if (ratio === 0) {
+          el.gaugeFillPath.style.stroke = 'var(--green)';
+        } else if (ratio < 0.5) {
+          el.gaugeFillPath.style.stroke = 'var(--amber)';
+        } else {
+          el.gaugeFillPath.style.stroke = 'var(--red)';
+        }
+      }
+
+      const pct = Math.round(ratio * 100);
+      if (el.gaugeCenterVal) {
+        el.gaugeCenterVal.textContent = `${pct}%`;
+        el.gaugeCenterVal.style.fill = ratio === 0 ? 'var(--green)' : (ratio < 0.5 ? 'var(--amber)' : 'var(--red)');
+      }
+      if (el.gaugeCenterSub) {
+        el.gaugeCenterSub.textContent = `${taintedCount} OF ${tot} TAINTED`;
+      }
+      if (el.fleetRadiationBadge) {
+        if (taintedCount === 0) {
+          el.fleetRadiationBadge.className = 'badge-radiation clean';
+          el.fleetRadiationBadge.textContent = 'CLEAN';
+        } else {
+          el.fleetRadiationBadge.className = 'badge-radiation tainted';
+          el.fleetRadiationBadge.textContent = 'TAINTED ☢';
+        }
+      }
+
+      if (el.gaugeCapabilityVal && el.microCapFill) {
+        if (taintedCount === 0) {
+          el.gaugeCapabilityVal.textContent = 'Unrestricted';
+          el.microCapFill.style.width = '100%';
+          el.microCapFill.style.background = 'var(--green)';
+        } else {
+          el.gaugeCapabilityVal.textContent = 'Zero-Trust Sandboxed';
+          el.microCapFill.style.width = '35%';
+          el.microCapFill.style.background = 'var(--amber)';
+        }
+      }
+    }
+
+    /* -------------------------------------------------------------
+       Density Toggle & Keyboard Shortcuts
+    ------------------------------------------------------------- */
+    function toggleDensity() {
+      state.isDense = !state.isDense;
+      const scroll = el.scrollContainer;
+      const btn = el.btnDensity;
+      if (state.isDense) {
+        scroll.classList.add('dense');
+        btn.textContent = 'Density: Compact';
+        btn.classList.add('active');
+        showToast('Table density set to Compact', 'info');
+      } else {
+        scroll.classList.remove('dense');
+        btn.textContent = 'Density: Comfortable';
+        btn.classList.remove('active');
+        showToast('Table density set to Comfortable', 'info');
+      }
+    }
+
+    /* -------------------------------------------------------------
+       SSE and Telemetry Sync
+    ------------------------------------------------------------- */
+    function setupEventSource() {
+      if (!window.EventSource) {
+        showToast('SSE not supported in this browser environment', 'error');
+        return;
+      }
+
+      const evtSource = new EventSource('/events');
+
+      evtSource.onopen = function() {
+        state.sseConnected = true;
+        el.sseBadge.className = 'status-badge healthy';
+        el.sseText.innerHTML = '&bull; LIVE SSE';
+      };
+
+      evtSource.onmessage = function(e) {
+        if (!e.data || e.data.trim() === '') return;
+        try {
+          const parsed = JSON.parse(e.data);
+          handleIncomingEvent(parsed);
+        } catch (err) {}
+      };
+
+      evtSource.onerror = function() {
+        state.sseConnected = false;
+        el.sseBadge.className = 'status-badge offline';
+        el.sseText.innerHTML = '&times; RECONNECTING';
+      };
+    }
+
+    function handleIncomingEvent(event) {
+      if (!event) return;
+      const item = {
+        event_id: event.event_id || event.id || ('evt-' + Math.random().toString(36).substr(2, 9)),
+        timestamp: event.timestamp || new Date().toISOString(),
+        event_type: event.event_type || event.type || event.action || 'INFO',
+        session_id: event.session_id || '',
+        pid: event.pid || 0,
+        status: event.status || 'INFO',
+        details: event.details || {}
+      };
+
+      state.events.push(item);
+      if (state.events.length > state.maxEvents) {
+        state.events.shift();
+      }
+
+      // Record in canvas timeline
+      recordEventInTimeline(item);
+
+      if (item.event_type === 'COMMAND_BLOCKED' || item.status === 'BLOCKED') {
+        const curr = parseInt(el.blockedExploits.textContent) || 0;
+        el.blockedExploits.textContent = curr + 1;
+      }
+
+      if (item.event_type === 'HITL_PROMPT' || item.status === 'PROMPT_HITL') {
+        const reqId = item.details.hitl_request_id || item.details.request_id || item.event_id;
+        state.pendingHitl[reqId] = {
+          request_id: reqId,
+          session_id: item.session_id,
+          pid: item.pid,
+          command: item.details.command || '',
+          reason: item.details.reason || 'Operator confirmation required',
+          created_at: item.timestamp,
+          details: item.details
+        };
+        renderHitlCards();
+      } else if (item.event_type === 'HITL_DECISION') {
+        const reqId = item.details.request_id || item.details.hitl_request_id;
+        if (reqId && state.pendingHitl[reqId]) {
+          delete state.pendingHitl[reqId];
+          renderHitlCards();
+        }
+      }
+
+      if (eventMatchesFilter(item, state.activeFilter, state.searchQuery)) {
+        appendEventRow(item);
+        updateEventsCounter();
+        if (state.autoScroll) {
+          el.scrollContainer.scrollTop = el.scrollContainer.scrollHeight;
+        }
+      }
+      updateFilterCounters();
+    }
+
+    function updateFilterCounters() {
+      let allCount = state.events.length;
+      let blockedCount = 0;
+      let taintCount = 0;
+      let vaultCount = 0;
+      let hitlCount = 0;
+      let systemCount = 0;
+
+      for (let i = 0; i < state.events.length; i++) {
+        const item = state.events[i];
+        const t = (item.event_type || '').toUpperCase();
+        const s = (item.status || '').toUpperCase();
+
+        const isBlocked = t.includes('BLOCKED') || s === 'BLOCKED';
+        const isTaint = t.includes('TAINT') || s === 'TAINTED';
+        const isVault = t.includes('VAULT') || t.includes('TOKENIZE') || t.includes('SECRET');
+        const isHitl = t.includes('HITL') || s === 'PROMPT_HITL';
+
+        if (isBlocked) blockedCount++;
+        if (isTaint) taintCount++;
+        if (isVault) vaultCount++;
+        if (isHitl) hitlCount++;
+        if (!isBlocked && !isTaint && !isVault && !isHitl) systemCount++;
+      }
+
+      if (el.filterCountAll) el.filterCountAll.textContent = `[${allCount}]`;
+      if (el.filterCountBlocked) el.filterCountBlocked.textContent = `[${blockedCount}]`;
+      if (el.filterCountTaint) el.filterCountTaint.textContent = `[${taintCount}]`;
+      if (el.filterCountVault) el.filterCountVault.textContent = `[${vaultCount}]`;
+      if (el.filterCountHitl) el.filterCountHitl.textContent = `[${hitlCount}]`;
+      if (el.filterCountSystem) el.filterCountSystem.textContent = `[${systemCount}]`;
+    }
+
+    function eventMatchesFilter(item, filterType, query) {
+      if (filterType !== 'ALL') {
+        const t = (item.event_type || '').toUpperCase();
+        const s = (item.status || '').toUpperCase();
+        if (filterType === 'BLOCKED' && !t.includes('BLOCKED') && s !== 'BLOCKED') return false;
+        if (filterType === 'TAINT' && !t.includes('TAINT') && s !== 'TAINTED') return false;
+        if (filterType === 'VAULT' && !t.includes('VAULT') && !t.includes('TOKENIZE') && !t.includes('SECRET')) return false;
+        if (filterType === 'HITL' && !t.includes('HITL') && s !== 'PROMPT_HITL') return false;
+        if (filterType === 'SYSTEM' && (t.includes('BLOCKED') || s === 'BLOCKED' || t.includes('TAINT') || s === 'TAINTED' || t.includes('VAULT') || t.includes('TOKENIZE') || t.includes('SECRET') || t.includes('HITL') || s === 'PROMPT_HITL')) return false;
+      }
+
+      if (query && query.trim() !== '') {
+        const q = query.toLowerCase().trim();
+        const searchStr = (
+          (item.event_type || '') + ' ' +
+          (item.session_id || '') + ' ' +
+          (item.pid || '') + ' ' +
+          (item.status || '') + ' ' +
+          JSON.stringify(item.details || {})
+        ).toLowerCase();
+        return searchStr.includes(q);
+      }
+      return true;
+    }
+
+    function appendEventRow(item) {
+      const tr = document.createElement('tr');
+      tr.className = 'clickable-row';
+      tr.onclick = () => openEventInspector(item.event_id);
+
+      tr.innerHTML = `
+        <td class="mono" style="color:var(--text-dim);">${formatTime(item.timestamp)}</td>
+        <td>${renderEventBadge(item.event_type, item.status)}</td>
+        <td class="mono">
+          <span style="color:var(--blue);">${escapeHtml(item.session_id ? item.session_id.substring(0, 16) : '-')}</span>
+          ${item.pid ? `<span style="color:var(--text-dim);"> [${item.pid}]</span>` : ''}
+        </td>
+        <td><span class="mono" style="font-size:10px;font-weight:600;color:${getStatusColor(item.status)};">${escapeHtml(item.status)}</span></td>
+        <td class="event-details" title="Click row to inspect full details">${formatDetails(item.details)}</td>
+        <td style="text-align: right;">
+          <button class="btn-row-inspect" onclick="event.stopPropagation(); openEventInspector('${escapeHtml(item.event_id)}')">Inspect</button>
+        </td>
+      `;
+      el.eventsBody.appendChild(tr);
+
+      while (el.eventsBody.children.length > state.maxEvents) {
+        el.eventsBody.removeChild(el.eventsBody.firstChild);
+      }
+    }
+
+    function renderTelemetryTable() {
+      el.eventsBody.innerHTML = '';
+      const filtered = state.events.filter(ev => eventMatchesFilter(ev, state.activeFilter, state.searchQuery));
+      filtered.forEach(appendEventRow);
+      updateEventsCounter(filtered.length);
+      if (state.autoScroll) {
+        el.scrollContainer.scrollTop = el.scrollContainer.scrollHeight;
+      }
+    }
+
+    function setFilter(filterType, btn) {
+      state.activeFilter = filterType;
+      document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderTelemetryTable();
+    }
+
+    function handleSearch(val) {
+      state.searchQuery = val;
+      renderTelemetryTable();
+    }
+
+    function toggleAutoScroll() {
+      state.autoScroll = !state.autoScroll;
+      if (state.autoScroll) {
+        el.btnAutoScroll.classList.add('active');
+        el.btnAutoScroll.textContent = 'Auto-Scroll: ON';
+        el.scrollContainer.scrollTop = el.scrollContainer.scrollHeight;
+      } else {
+        el.btnAutoScroll.classList.remove('active');
+        el.btnAutoScroll.textContent = 'Auto-Scroll: OFF';
+      }
+    }
+
+    function clearTelemetryDisplay() {
+      state.events = [];
+      el.eventsBody.innerHTML = '';
+      updateEventsCounter(0);
+      updateFilterCounters();
+      showToast('Telemetry feed buffer cleared from memory', 'info');
+    }
+
+    /* -------------------------------------------------------------
+       Sync and Status Polling
+    ------------------------------------------------------------- */
+    async function syncStatus() {
+      try {
+        const res = await fetch('/status');
+        if (!res.ok) throw new Error('Status endpoint unavailable');
+        const data = await res.json();
+        const payload = data.data || data;
+
+        const activeCount = payload.active_agents || (payload.sessions ? Object.keys(payload.sessions).length : 0);
+        const taintedCount = payload.tainted_agents || 0;
+        const vaultTokens = payload.vault_tokens || payload.vault_count || 0;
+        const blockedCount = payload.blocked_exploits || payload.blocked_count || 0;
+
+        el.activeAgents.textContent = activeCount;
+        el.taintedSessions.textContent = taintedCount;
+        el.vaultedSecrets.textContent = vaultTokens;
+        el.blockedExploits.textContent = blockedCount;
+
+        if (payload.memory_rss_mb !== undefined) {
+          el.memoryRss.innerHTML = `${parseFloat(payload.memory_rss_mb).toFixed(1)} <span style="font-size:11px;color:var(--text-muted);">MB</span>`;
+        }
+
+        if (payload.intent_drift_score !== undefined) {
+          const score = parseFloat(payload.intent_drift_score);
+          el.intentDrift.textContent = score.toFixed(2);
+          el.driftBar.style.width = `${Math.min(100, Math.max(0, score * 100))}%`;
+          if (score >= 0.65) {
+            el.driftBar.style.backgroundColor = 'var(--cyan)';
+            el.driftLabel.textContent = `Cosine: SAFE (≥ 0.65)`;
+          } else {
+            el.driftBar.style.backgroundColor = 'var(--red)';
+            el.driftLabel.textContent = `Cosine: DRIFT WARNING (< 0.65)`;
+          }
+        }
+
+        // Latency
+        if (payload.decision_latency_ms !== undefined) {
+          const lat = parseFloat(payload.decision_latency_ms);
+          if (el.gaugeLatencyVal) el.gaugeLatencyVal.textContent = `${lat.toFixed(2)} ms`;
+          if (el.microLatencyFill) {
+            const pct = Math.min(100, Math.round((lat / 2.0) * 100));
+            el.microLatencyFill.style.width = `${pct}%`;
+            el.microLatencyFill.style.background = lat < 0.5 ? 'var(--green)' : (lat < 1.5 ? 'var(--amber)' : 'var(--red)');
+          }
+        }
+
+        // Vault micro-gauge
+        if (el.gaugeVaultVal) el.gaugeVaultVal.textContent = `${vaultTokens} active`;
+        if (el.microVaultFill) el.microVaultFill.style.width = `${Math.min(100, vaultTokens * 25)}%`;
+
+        // Update Radiation Gauge
+        updateRadiationGauge(activeCount, taintedCount);
+
+        // Update Sessions
+        state.sessions = payload.sessions || {};
+        renderAgentsTable();
+
+        el.statusBadge.className = 'status-badge healthy';
+        el.statusText.textContent = 'HEALTHY';
+      } catch (err) {
+        el.statusBadge.className = 'status-badge offline';
+        el.statusText.textContent = 'OFFLINE';
+      }
+    }
+
+    async function syncAuditHistory() {
+      try {
+        const res = await fetch('/audit?limit=200');
+        if (!res.ok) return;
+        const data = await res.json();
+        const events = Array.isArray(data) ? data : (data.events || data.audit_events || []);
+        if (events && events.length > 0) {
+          events.forEach(ev => {
+            const item = {
+              event_id: ev.event_id || ev.id || ('hist-' + Math.random().toString(36).substr(2, 9)),
+              timestamp: ev.timestamp || new Date().toISOString(),
+              event_type: ev.event_type || ev.type || 'INFO',
+              session_id: ev.session_id || '',
+              pid: ev.pid || 0,
+              status: ev.status || 'INFO',
+              details: ev.details || {}
+            };
+            state.events.push(item);
+            recordEventInTimeline(item);
+          });
+          renderTelemetryTable();
+          renderTimelineCanvas();
+          updateFilterCounters();
+        }
+      } catch (err) {}
+    }
+
+    async function manualRefresh() {
+      await syncStatus();
+      await syncAuditHistory();
+      showToast('State synchronized with daemon', 'success');
+    }
+
+    /* -------------------------------------------------------------
+       Agents Table Rendering
+    ------------------------------------------------------------- */
+    function renderAgentsTable() {
+      const keys = Object.keys(state.sessions);
+      el.agentsCount.textContent = `${keys.length} AGENT${keys.length === 1 ? '' : 'S'}`;
+
+      if (keys.length === 0) {
+        el.agentsBody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:18px;">No active wrapped agent sessions registered. Run <code>ag wrap -- &lt;command&gt;</code> to attach kernel shims.</td></tr>';
+        return;
+      }
+
+      el.agentsBody.innerHTML = '';
+      keys.forEach(sid => {
+        const agent = state.sessions[sid] || {};
+        const pid = agent.pid || agent.wrapper_pid || '-';
+        const profile = agent.profile || 'generic';
+        const status = agent.process_status || (agent.paused ? 'PAUSED' : 'RUNNING');
+        const isTainted = agent.taint === 'TAINTED' || agent.taint_state === 'TAINTED';
+        const cpu = agent.cpu_percent !== undefined ? `${agent.cpu_percent.toFixed(1)}%` : '--';
+        const rss = agent.memory_rss_mb !== undefined ? `${agent.memory_rss_mb.toFixed(1)} MB` : '--';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="mono" style="color:var(--blue);font-weight:600;">${escapeHtml(sid)}</td>
+          <td class="mono">${escapeHtml(pid)}</td>
+          <td><span class="tag mono">${escapeHtml(profile)}</span></td>
+          <td>${formatStatusBadge(status)}</td>
+          <td>${isTainted ? '<span class="badge-tainted">TAINTED ☢</span>' : '<span class="badge-clean">CLEAN</span>'}</td>
+          <td class="mono">${cpu}</td>
+          <td class="mono">${rss}</td>
+          <td style="text-align: right;">
+            <button class="btn-agent inspect" onclick="inspectAgent('${escapeHtml(sid)}', ${pid})">Inspect</button>
+            ${status === 'PAUSED'
+              ? `<button class="btn-agent resume" onclick="resumeAgent(${pid}, this)">Resume</button>`
+              : `<button class="btn-agent pause" onclick="pauseAgent(${pid}, this)">Pause</button>`
+            }
+            <button class="btn-agent terminate" onclick="terminateAgent(${pid}, this)">Terminate</button>
+          </td>
+        `;
+        el.agentsBody.appendChild(tr);
+      });
+    }
+
+    /* -------------------------------------------------------------
+       Agent Control Actions (Pause, Resume, Terminate)
+    ------------------------------------------------------------- */
+    async function pauseAgent(pid, btn) {
+      if (!pid || pid === '-') return;
+      const originalText = btn ? btn.textContent : '';
+      if (btn) { btn.disabled = true; btn.textContent = 'Pausing...'; }
+      try {
+        const res = await fetch('/api/agent/pause', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pid: pid })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`Agent PID ${pid} paused (SIGSTOP)`, 'info');
+          await syncStatus();
+        } else {
+          showToast(`Failed to pause: ${data.error || 'Unknown error'}`, 'error');
+        }
+      } catch (err) {
+        showToast(`Request failed: ${err.message}`, 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = originalText; }
+      }
+    }
+
+    async function resumeAgent(pid, btn) {
+      if (!pid || pid === '-') return;
+      const originalText = btn ? btn.textContent : '';
+      if (btn) { btn.disabled = true; btn.textContent = 'Resuming...'; }
+      try {
+        const res = await fetch('/api/agent/resume', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pid: pid })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`Agent PID ${pid} resumed (SIGCONT)`, 'info');
+          await syncStatus();
+        } else {
+          showToast(`Failed to resume: ${data.error || 'Unknown error'}`, 'error');
+        }
+      } catch (err) {
+        showToast(`Request failed: ${err.message}`, 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = originalText; }
+      }
+    }
+
+    async function terminateAgent(pid, btn) {
+      if (!pid || pid === '-') return;
+      if (!confirm(`Are you sure you want to terminate agent process PID ${pid}?`)) return;
+      const originalText = btn ? btn.textContent : '';
+      if (btn) { btn.disabled = true; btn.textContent = 'Terminating...'; }
+      try {
+        const res = await fetch('/api/agent/terminate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pid: pid })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`Agent PID ${pid} terminated (SIGKILL)`, 'info');
+          await syncStatus();
+        } else {
+          showToast(`Failed to terminate: ${data.error || 'Unknown error'}`, 'error');
+        }
+      } catch (err) {
+        showToast(`Request failed: ${err.message}`, 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = originalText; }
+      }
+    }
+
+    /* -------------------------------------------------------------
+       Agent Deep Inspection Modal
+    ------------------------------------------------------------- */
+    async function inspectAgent(sessionId, pid) {
+      try {
+        const res = await fetch('/api/agent/inspect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: sessionId, pid: pid })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(`Inspection failed: ${data.error || 'Unable to inspect process'}`, 'error');
+          return;
+        }
+
+        const agent = data.agent || {};
+        state.currentModalAgent = agent;
+
+        document.getElementById('aim-session-id').textContent = agent.session_id || sessionId;
+        document.getElementById('aim-pid').textContent = `PID ${agent.pid || pid} (PPID ${agent.ppid || '--'})`;
+        document.getElementById('aim-profile').innerHTML = `<span class="tag mono">${escapeHtml(agent.profile || 'generic')}</span>`;
+        document.getElementById('aim-status').innerHTML = formatStatusBadge(agent.process_status || 'RUNNING');
+        document.getElementById('aim-cwd').textContent = agent.working_dir || '--';
+
+        document.getElementById('aim-cpu').textContent = `${(agent.cpu_percent || 0.0).toFixed(1)}%`;
+        document.getElementById('aim-rss').textContent = `${(agent.memory_rss_mb || 0.0).toFixed(1)} MB`;
+        document.getElementById('aim-children').textContent = `${agent.child_processes_count || 0} child process(es)`;
+
+        const isTainted = agent.taint_state === 'TAINTED' || agent.taint === 'TAINTED';
+        document.getElementById('aim-taint-meter').innerHTML = isTainted
+          ? '<span class="badge-tainted">TAINTED ☢ [100% Radiation]</span>'
+          : '<span class="badge-clean">CLEAN [0% Radiation]</span>';
+
+        document.getElementById('aim-root-intent').textContent = agent.root_intent || 'Default capability envelope';
+
+        // Provenance chain
+        const provChain = agent.provenance_chain || [agent.session_id || sessionId];
+        const provContainer = document.getElementById('aim-provenance-chain');
+        provContainer.innerHTML = '';
+        provChain.forEach((node, idx) => {
+          if (idx > 0) {
+            const arr = document.createElement('span');
+            arr.className = 'prov-arrow';
+            arr.innerHTML = '&rarr;';
+            provContainer.appendChild(arr);
+          }
+          const span = document.createElement('span');
+          span.className = 'prov-node' + (idx === provChain.length - 1 ? ' current' : '');
+          if (isTainted && idx === provChain.length - 1) span.className += ' tainted';
+          span.textContent = node;
+          provContainer.appendChild(span);
+        });
+
+        // Intercepted commands
+        const cmdContainer = document.getElementById('aim-commands-list');
+        cmdContainer.innerHTML = '';
+        const cmds = agent.recent_commands || [];
+        if (cmds.length === 0) {
+          cmdContainer.innerHTML = '<div style="color:var(--text-muted);font-size:11px;font-style:italic;">No commands recorded for this session yet.</div>';
+        } else {
+          cmds.forEach(cmdObj => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'cmd-box' + (cmdObj.status === 'BLOCKED' ? ' blocked' : '');
+            itemDiv.style.padding = '5px 8px';
+            itemDiv.style.fontSize = '10px';
+            itemDiv.textContent = cmdObj.command || JSON.stringify(cmdObj);
+            cmdContainer.appendChild(itemDiv);
+          });
+        }
+
+        // Control buttons
+        const btnBox = document.getElementById('aim-control-buttons');
+        btnBox.innerHTML = `
+          ${agent.process_status === 'PAUSED'
+            ? `<button class="btn-agent resume" onclick="resumeAgent(${agent.pid || pid}); closeModal('agent-inspect-modal');">Resume Agent</button>`
+            : `<button class="btn-agent pause" onclick="pauseAgent(${agent.pid || pid}); closeModal('agent-inspect-modal');">Pause Agent</button>`
+          }
+          <button class="btn-agent terminate" onclick="terminateAgent(${agent.pid || pid}); closeModal('agent-inspect-modal');">Terminate Process</button>
+        `;
+
+        openModal('agent-inspect-modal');
+      } catch (err) {
+        showToast(`Inspection request failed: ${err.message}`, 'error');
+      }
+    }
+
+    /* -------------------------------------------------------------
+       Command & Event Inspection Modal
+    ------------------------------------------------------------- */
+    function openEventInspector(eventId) {
+      const item = state.events.find(e => e.event_id === eventId);
+      if (!item) {
+        showToast(`Event ${eventId} not found in buffer`, 'error');
+        return;
+      }
+
+      state.currentModalEvent = item;
+      const details = item.details || {};
+      const cmd = details.command || details.action || details.file_path || '--';
+
+      const cmdBox = document.getElementById('modal-cmd-text');
+      cmdBox.textContent = cmd;
+      if (item.status === 'BLOCKED' || (item.event_type && item.event_type.includes('BLOCKED'))) {
+        cmdBox.className = 'cmd-box blocked';
+      } else {
+        cmdBox.className = 'cmd-box';
+      }
+
+      document.getElementById('modal-ev-type').innerHTML = renderEventBadge(item.event_type, item.status);
+      document.getElementById('modal-status').innerHTML = `<span style="color:${getStatusColor(item.status)};font-weight:700;">${escapeHtml(item.status)}</span>`;
+      document.getElementById('modal-session-id').textContent = item.session_id || '--';
+      document.getElementById('modal-pid').textContent = item.pid ? `PID ${item.pid}` : '--';
+      document.getElementById('modal-reason').textContent = details.reason || details.policy || 'Evaluated autonomously by zero-trust baseline';
+      
+      const taintVal = details.taint_state || (item.event_type.includes('TAINT') ? 'TAINTED' : 'CLEAN');
+      document.getElementById('modal-taint-status').innerHTML = taintVal === 'TAINTED'
+        ? '<span class="badge-tainted">TAINTED ☢</span>'
+        : '<span class="badge-clean">CLEAN</span>';
+
+      const simVal = details.similarity || details.cosine_similarity;
+      document.getElementById('modal-intent-sim').textContent = (simVal !== undefined && simVal !== null)
+        ? `Cosine Similarity: ${parseFloat(simVal).toFixed(2)}`
+        : '--';
+
+      const provContainer = document.getElementById('modal-provenance-chain');
+      provContainer.innerHTML = '';
+      const provNodes = details.provenance || [item.session_id || 'session:origin'];
+      provNodes.forEach((node, idx) => {
+        if (idx > 0) {
+          const arr = document.createElement('span');
+          arr.className = 'prov-arrow';
+          arr.innerHTML = '&rarr;';
+          provContainer.appendChild(arr);
+        }
+        const span = document.createElement('span');
+        span.className = 'prov-node' + (idx === provNodes.length - 1 ? ' current' : '');
+        if (taintVal === 'TAINTED') span.className += ' tainted';
+        span.textContent = node;
+        provContainer.appendChild(span);
+      });
+
+      document.getElementById('modal-json-text').textContent = JSON.stringify(item, null, 2);
+
+      const quickBox = document.getElementById('modal-quick-actions');
+      quickBox.innerHTML = '';
+      if (item.pid && item.pid > 0) {
+        quickBox.innerHTML = `
+          <button class="btn-agent" onclick="pauseAgent(${item.pid})">Pause PID ${item.pid}</button>
+          <button class="btn-agent terminate" onclick="terminateAgent(${item.pid})">Kill PID ${item.pid}</button>
+        `;
+      }
+
+      openModal('inspect-modal');
+    }
+
+    function copyModalCommand() {
+      const text = document.getElementById('modal-cmd-text').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Command copied to clipboard', 'success');
+      }).catch(() => {
+        showToast('Failed to copy command', 'error');
+      });
+    }
+
+    function copyModalJson() {
+      const text = document.getElementById('modal-json-text').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Audit JSON copied to clipboard', 'success');
+      }).catch(() => {
+        showToast('Failed to copy JSON', 'error');
+      });
+    }
+
+    function openModal(id) {
+      const m = document.getElementById(id);
+      if (m) m.classList.add('open');
+    }
+
+    function closeModal(id) {
+      const m = document.getElementById(id);
+      if (m) m.classList.remove('open');
+    }
+
+    function handleBackdropClick(e, id) {
+      if (e.target && e.target.id === id) {
+        closeModal(id);
+      }
+    }
+
+    /* -------------------------------------------------------------
+       HITL Operator Decisions
+    ------------------------------------------------------------- */
+    function renderHitlCards() {
+      const keys = Object.keys(state.pendingHitl);
+      el.hitlCounter.textContent = `${keys.length} PENDING`;
+
+      if (keys.length === 0) {
+        el.hitlContainer.innerHTML = '';
+        el.hitlContainer.style.display = 'none';
+        el.hitlEmpty.style.display = 'flex';
+        if (el.hitlHeaderExpanded) el.hitlHeaderExpanded.style.display = 'none';
+        if (el.hitlSection) {
+          el.hitlSection.className = 'collapsed';
+        }
+        return;
+      }
+
+      if (el.hitlSection) {
+        el.hitlSection.className = 'expanded';
+      }
+      el.hitlEmpty.style.display = 'none';
+      if (el.hitlHeaderExpanded) el.hitlHeaderExpanded.style.display = 'flex';
+      el.hitlContainer.style.display = 'grid';
+      el.hitlContainer.innerHTML = '';
+
+      keys.forEach(k => {
+        const item = state.pendingHitl[k];
+        const card = document.createElement('div');
+        card.className = 'hitl-card';
+        card.id = `hitl-card-${item.request_id}`;
+
+        card.innerHTML = `
+          <div class="hitl-card-top">
+            <span class="hitl-id mono">REQ: ${escapeHtml(item.request_id.substring(0, 16))}</span>
+            <span class="mono">${escapeHtml(item.session_id || 'session-agent')} ${item.pid ? `[PID ${item.pid}]` : ''}</span>
+          </div>
+          <div class="hitl-cmd">${escapeHtml(item.command)}</div>
+          <div class="hitl-reason"><strong>Trigger Reason:</strong> ${escapeHtml(item.reason)}</div>
+          <div class="hitl-btn-row">
+            <button class="btn-approve" onclick="resolveHitl('${escapeHtml(item.request_id)}', 'ALLOW')">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Allow Execution
+            </button>
+            <button class="btn-deny" onclick="resolveHitl('${escapeHtml(item.request_id)}', 'DENY')">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Deny &amp; Terminate
+            </button>
+            <button class="btn-hitl-inspect" onclick="inspectHitlRequest('${escapeHtml(item.request_id)}')">
+              Inspect DAG
+            </button>
+          </div>
+        `;
+        el.hitlContainer.appendChild(card);
+      });
+    }
+
+    async function resolveHitl(requestId, decision) {
+      const card = document.getElementById(`hitl-card-${requestId}`);
+      if (card) card.classList.add('resolving');
+
+      try {
+        const res = await fetch('/api/hitl/decision', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            request_id: requestId,
+            decision: decision
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`HITL decision submitted: ${decision}`, decision === 'ALLOW' ? 'success' : 'info');
+          delete state.pendingHitl[requestId];
+          renderHitlCards();
+        } else {
+          showToast(`HITL failed: ${data.error || 'Server rejected decision'}`, 'error');
+          if (card) card.classList.remove('resolving');
+        }
+      } catch (err) {
+        showToast(`Network error submitting HITL: ${err.message}`, 'error');
+        if (card) card.classList.remove('resolving');
+      }
+    }
+
+    function inspectHitlRequest(requestId) {
+      const item = state.pendingHitl[requestId];
+      if (!item) return;
+      openEventInspector(requestId);
+    }
+
+    /* -------------------------------------------------------------
+       Audit Export (JSON & CSV)
+    ------------------------------------------------------------- */
+    function exportJSON() {
+      if (state.events.length === 0) {
+        showToast('No events in memory to export', 'error');
+        return;
+      }
+      const blob = new Blob([JSON.stringify(state.events, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `agentguard_audit_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Exported ${state.events.length} events as JSON`, 'success');
+    }
+
+    function exportCSV() {
+      if (state.events.length === 0) {
+        showToast('No events in memory to export', 'error');
+        return;
+      }
+      const headers = ['timestamp', 'event_id', 'event_type', 'session_id', 'pid', 'status', 'command', 'details'];
+      const rows = state.events.map(ev => {
+        const cmd = ev.details?.command || ev.details?.action || '';
+        const detailsJson = JSON.stringify(ev.details || {}).replace(/"/g, '""');
+        return [
+          `"${ev.timestamp}"`,
+          `"${ev.event_id}"`,
+          `"${ev.event_type}"`,
+          `"${ev.session_id}"`,
+          ev.pid || '',
+          `"${ev.status}"`,
+          `"${cmd.replace(/"/g, '""')}"`,
+          `"${detailsJson}"`
+        ].join(',');
+      });
+
+      const csvContent = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `agentguard_audit_${new Date().toISOString().replace(/[:.]/g, '-')}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Exported ${state.events.length} events as CSV`, 'success');
+    }
+
+    /* -------------------------------------------------------------
+       Formatting Helpers
+    ------------------------------------------------------------- */
+    function formatTime(isoString) {
+      if (!isoString) return '--:--:--';
+      try {
+        const d = new Date(isoString);
+        if (isNaN(d.getTime())) {
+          return isoString.split('T')[1]?.substring(0, 8) || isoString;
+        }
+        return d.toTimeString().substring(0, 8);
+      } catch (e) {
+        return isoString;
+      }
+    }
+
+    function formatUptime(sec) {
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function renderEventBadge(eventType, status) {
+      const ev = (eventType || '').toUpperCase();
+      const st = (status || '').toUpperCase();
+      if (ev.includes('BLOCKED') || st === 'BLOCKED') {
+        return `<span class="ev-badge blocked">BLOCKED</span>`;
+      } else if (ev.includes('VAULT') || ev.includes('TOKEN')) {
+        return `<span class="ev-badge vault">VAULTED</span>`;
+      } else if (ev.includes('TAINT')) {
+        return `<span class="ev-badge taint">TAINTED</span>`;
+      } else if (ev.includes('HITL') || st === 'PROMPT_HITL') {
+        return `<span class="ev-badge hitl">HITL REQ</span>`;
+      } else if (st === 'ALLOWED' || st === 'OK' || st === 'PASS') {
+        return `<span class="ev-badge pass">ALLOWED</span>`;
+      } else {
+        return `<span class="ev-badge info">${escapeHtml(eventType.substring(0, 12))}</span>`;
+      }
+    }
+
+    function getStatusColor(status) {
+      const s = (status || '').toUpperCase();
+      if (s === 'BLOCKED' || s === 'DENIED') return 'var(--red)';
+      if (s === 'TAINTED') return 'var(--amber)';
+      if (s === 'ALLOWED' || s === 'OK') return 'var(--green)';
+      if (s === 'PROMPT_HITL') return 'var(--amber)';
+      return 'var(--blue)';
+    }
+
+    function formatStatusBadge(status) {
+      const s = (status || 'RUNNING').toUpperCase();
+      if (s === 'RUNNING') return '<span class="status-badge healthy" style="font-size:9px;padding:1px 6px;">● RUNNING</span>';
+      if (s === 'PAUSED') return '<span class="status-badge degraded" style="font-size:9px;padding:1px 6px;">⏸ PAUSED</span>';
+      if (s === 'TERMINATED' || s === 'KILLED') return '<span class="status-badge offline" style="font-size:9px;padding:1px 6px;">⏹ DEAD</span>';
+      return `<span class="status-badge" style="font-size:9px;padding:1px 6px;">${escapeHtml(s)}</span>`;
+    }
+
+    function formatDetails(details) {
+      if (!details) return '--';
+      if (typeof details === 'string') return escapeHtml(details);
+      if (details.command) return `<span style="color:var(--text);font-weight:600;">cmd:</span> ${escapeHtml(details.command)}`;
+      if (details.action) return `<span style="color:var(--text);font-weight:600;">action:</span> ${escapeHtml(details.action)}`;
+      if (details.file_path) return `<span style="color:var(--text);font-weight:600;">file:</span> ${escapeHtml(details.file_path)}`;
+      if (details.reason) return `<span style="color:var(--amber);">reason:</span> ${escapeHtml(details.reason)}`;
+      if (details.token) return `<span style="color:var(--blue);">token:</span> ${escapeHtml(details.token)}`;
+      return escapeHtml(JSON.stringify(details).substring(0, 100));
+    }
+
+    function updateEventsCounter(count) {
+      const num = count !== undefined ? count : state.events.length;
+      el.eventsCounter.textContent = `${num} EVENT${num === 1 ? '' : 'S'}`;
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+      }, 3500);
+    }
+
+    window.addEventListener('DOMContentLoaded', initDashboard);
+  </script>
+</body>
+</html>
