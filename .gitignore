@@ -37,3 +37,4 @@ agentguard_audit.jsonl
 
 # Agents workspace (internal dev scaffolding)
 .agents/
+*.zip
