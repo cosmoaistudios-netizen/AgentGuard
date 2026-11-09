@@ -19,6 +19,8 @@ from rich.live import Live
 from rich.panel import Panel
 from rich.text import Text
 
+from agentguard.branding import BRAND_CREDIT, LOGO_ASCII_SLANT, LOGO_COLORS
+
 from agentguard.cockpit.client import CockpitClient, DEFAULT_HTTP_URL, DEFAULT_SOCKET_PATH
 from agentguard.cockpit.drift_meter import IntentDriftGaugeWidget
 from agentguard.cockpit.kill_switch import KillSwitchController
@@ -136,8 +138,8 @@ class CockpitApp:
         sessions = raw_sessions if isinstance(raw_sessions, dict) else {}
         self.kill_switch.handle_key(ch, sessions=sessions, pending_hitl=self.pending_hitl)
 
-    def build_header(self) -> Panel:
-        """Build top status header panel."""
+    def build_header(self, term_height: Optional[int] = None) -> Panel:
+        """Build top status header panel with AgentGuard logo and branding."""
         def _safe_int(val: Any, default: int = 0) -> int:
             if val is None:
                 return default
@@ -158,25 +160,62 @@ class CockpitApp:
         vault_tokens = _safe_int(status.get("vault_tokens"), 0)
         blocked_count = _safe_int(status.get("blocked_exploits"), 0)
 
-        header_text = Text()
-        header_text.append("🛡️ AGENTGUARD COCKPIT v0.1.0", style="bold cyan")
-        header_text.append("  │  ", style="dim")
-        header_text.append("● ONLINE", style="bold green")
-        header_text.append(f" ({uptime_str})", style="dim")
-        header_text.append("  │  ", style="dim")
-        header_text.append(f"Agents: {active_agents} ", style="bold white")
-        if tainted_agents > 0:
-            header_text.append(f"({tainted_agents} TAINTED ☢)", style="bold red")
-        else:
-            header_text.append("(0 Tainted)", style="green")
-        header_text.append("  │  ", style="dim")
-        header_text.append(f"Vault Tokens: {vault_tokens}", style="bold blue")
-        header_text.append("  │  ", style="dim")
-        header_text.append(f"Blocked: {blocked_count}", style="bold red" if blocked_count > 0 else "dim")
-        header_text.append("  │  ", style="dim")
-        header_text.append("Latency: <2ms", style="bold green")
+        if term_height is None:
+            term_height = 24
+            if hasattr(self.console, "size") and self.console.size:
+                term_height = self.console.size.height
 
-        return Panel(header_text, style="white", border_style="cyan")
+        header_text = Text()
+
+        if term_height >= 34:
+            # Full ASCII Logo & Attribution
+            for line, color in zip(LOGO_ASCII_SLANT, LOGO_COLORS):
+                header_text.append(line + "\n", style=color)
+            header_text.append(f"                      {BRAND_CREDIT}\n\n", style="bold italic bright_magenta")
+
+            header_text.append("  ● ONLINE", style="bold green")
+            header_text.append(f" ({uptime_str})", style="dim")
+            header_text.append("  │  ", style="dim")
+            header_text.append(f"Agents: {active_agents} ", style="bold white")
+            if tainted_agents > 0:
+                header_text.append(f"({tainted_agents} TAINTED ☢)", style="bold red")
+            else:
+                header_text.append("(0 Tainted)", style="green")
+            header_text.append("  │  ", style="dim")
+            header_text.append(f"Vault Tokens: {vault_tokens}", style="bold blue")
+            header_text.append("  │  ", style="dim")
+            header_text.append(f"Blocked: {blocked_count}", style="bold red" if blocked_count > 0 else "dim")
+            header_text.append("  │  ", style="dim")
+            header_text.append("Latency: <2ms", style="bold green")
+
+            return Panel(
+                header_text,
+                title="[bold cyan]🛡️ AGENTGUARD COCKPIT v0.1.0[/bold cyan]",
+                style="white",
+                border_style="cyan",
+            )
+        else:
+            # Compact view for smaller terminals
+            header_text.append("🛡️ AGENTGUARD COCKPIT v0.1.0", style="bold cyan")
+            header_text.append("  │  ", style="dim")
+            header_text.append(f"{BRAND_CREDIT}", style="bold italic bright_magenta")
+            header_text.append("  │  ", style="dim")
+            header_text.append("● ONLINE", style="bold green")
+            header_text.append(f" ({uptime_str})", style="dim")
+            header_text.append("  │  ", style="dim")
+            header_text.append(f"Agents: {active_agents} ", style="bold white")
+            if tainted_agents > 0:
+                header_text.append(f"({tainted_agents} TAINTED ☢)", style="bold red")
+            else:
+                header_text.append("(0 Tainted)", style="green")
+            header_text.append("  │  ", style="dim")
+            header_text.append(f"Vault: {vault_tokens}", style="bold blue")
+            header_text.append("  │  ", style="dim")
+            header_text.append(f"Blocked: {blocked_count}", style="bold red" if blocked_count > 0 else "dim")
+            header_text.append("  │  ", style="dim")
+            header_text.append("Latency: <2ms", style="bold green")
+
+            return Panel(header_text, style="white", border_style="cyan")
 
     def build_footer(self) -> Panel:
         """Build bottom keybinding and status footer panel."""
@@ -199,14 +238,20 @@ class CockpitApp:
 
     def build_layout(self) -> Layout:
         """Assemble full responsive cockpit layout."""
+        term_height = 24
+        if hasattr(self.console, "size") and self.console.size:
+            term_height = self.console.size.height
+
+        header_size = 11 if term_height >= 34 else 3
+
         layout = Layout()
         layout.split_column(
-            Layout(name="header", size=3),
+            Layout(name="header", size=header_size),
             Layout(name="body", ratio=1),
             Layout(name="footer", size=3),
         )
 
-        layout["header"].update(self.build_header())
+        layout["header"].update(self.build_header(term_height=term_height))
         layout["footer"].update(self.build_footer())
 
         # Modal override for body if modal active

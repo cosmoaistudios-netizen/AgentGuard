@@ -21,6 +21,8 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from agentguard.branding import get_branding_banner
+
 try:
     import termios
     import tty
@@ -215,11 +217,12 @@ def build_menu_panel(selected_idx: int, daemon_online: bool, daemon_pid: Optiona
     """Construct Rich Panel rendering the interactive launcher menu."""
     content = Text()
 
-    # Header banner
-    content.append("🛡️  AGENTGUARD — Zero-Trust Security Kernel & Daemon\n", style="bold cyan")
+    # Branding logo banner & attribution
+    content.append(get_branding_banner(include_subtitle=True, include_credit=True))
+
     status_str = f"● ONLINE (PID {daemon_pid})" if daemon_online else "○ STOPPED"
     status_style = "bold green" if daemon_online else "bold red"
-    content.append("Daemon Status: ", style="dim")
+    content.append("  Daemon Status: ", style="dim")
     content.append(f"{status_str}\n\n", style=status_style)
 
     # Menu items
