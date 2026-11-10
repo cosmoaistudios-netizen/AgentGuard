@@ -15,7 +15,7 @@ AgentGuard intercepts, classifies, and enforces security policies on every comma
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-541%20passed-brightgreen.svg)](#-testing)
+[![Tests](https://img.shields.io/badge/tests-556%20passed-brightgreen.svg)](#-testing)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows%20(Native%20%26%20WSL2)-blueviolet.svg)](#-cross-platform--universal-os-support)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support%20Our%20Work-orange?logo=buymeacoffee&logoColor=white)](https://buymeacoffee.com/cosmoai)
 [![Contact](https://img.shields.io/badge/contact-cosmoaistudios%40gmail.com-blue)](mailto:cosmoaistudios@gmail.com)
@@ -246,15 +246,17 @@ AgentGuard includes tailored YAML security profiles in `agentguard/profiles/`:
 | `ag status` | Display daemon status, socket health, and connected agent sessions |
 | `ag wrap -- <cmd>` | Wrap an agent command with AgentGuard interception and proxying |
 | `ag cockpit` | Launch the real-time terminal monitoring cockpit (TUI) |
-| `ag notify setup` | Interactively configure Discord / Telegram security alert webhooks |
+| `ag notify wizard` | Launch interactive terminal setup wizard for Discord & Telegram |
+| `ag notify setup` | Configure notification credentials (CLI flags or interactive wizard) |
 | `ag notify test` | Send a synthetic threat alert to configured notification channels |
+| `ag notify status` | Display active notification channels and masked credentials |
 | `ag siem setup` | Configure Splunk, ELK, or S3 enterprise log export |
 
 ---
 
 ## 🧪 Testing
 
-AgentGuard maintains a comprehensive, zero-compromise test suite of **541 tests** covering all security tiers:
+AgentGuard maintains a comprehensive, zero-compromise test suite of **556 tests** covering all security tiers:
 
 ```bash
 # Run entire test suite

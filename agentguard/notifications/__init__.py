@@ -54,6 +54,12 @@ from agentguard.notifications.telegram import (
 )
 
 
+from agentguard.notifications.wizard import (
+    NotificationSetupWizard,
+    launch_notification_wizard,
+)
+
+
 def dispatch_threat_alert(
     event_type: str,
     details: Optional[Dict[str, Any]] = None,
@@ -115,4 +121,6 @@ __all__ = [
     "format_uptime",
     "get_process_ram_rss_bytes",
     "get_process_ram_rss_mb",
+    "NotificationSetupWizard",
+    "launch_notification_wizard",
 ]

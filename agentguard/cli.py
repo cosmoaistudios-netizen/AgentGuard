@@ -1394,8 +1394,22 @@ def notify_group():
 @click.option("--chat-id", "telegram_chat_id", default=None, help="Telegram target chat ID")
 @click.option("--enable/--disable", "master_enabled", default=None, help="Enable or disable alerting")
 @click.option("--heartbeat-interval", type=int, default=None, help="Heartbeat interval in seconds")
-def notify_setup(discord_webhook, telegram_token, telegram_chat_id, master_enabled, heartbeat_interval):
+@click.option("--wizard", "-w", is_flag=True, default=False, help="Launch interactive terminal setup wizard")
+def notify_setup(discord_webhook, telegram_token, telegram_chat_id, master_enabled, heartbeat_interval, wizard):
     """Configure notification credentials and preferences in ~/.agentguard/notifications.yaml."""
+    no_flags = (
+        discord_webhook is None
+        and telegram_token is None
+        and telegram_chat_id is None
+        and master_enabled is None
+        and heartbeat_interval is None
+    )
+
+    if wizard or (no_flags and sys.stdin.isatty()):
+        from agentguard.notifications.wizard import launch_notification_wizard
+        launch_notification_wizard()
+        return
+
     from agentguard.notifications.config import (
         load_notification_config,
         save_notification_config,
@@ -1447,6 +1461,13 @@ def notify_setup(discord_webhook, telegram_token, telegram_chat_id, master_enabl
     click.echo(f"Discord:       {'CONFIGURED & ENABLED' if config.discord.enabled else 'DISABLED / NOT CONFIGURED'}")
     click.echo(f"Telegram:      {'CONFIGURED & ENABLED' if config.telegram.enabled else 'DISABLED / NOT CONFIGURED'}")
     click.echo(f"Heartbeat:     {'ENABLED (' + str(config.heartbeat.interval_seconds) + 's)' if config.heartbeat.enabled else 'DISABLED'}")
+
+
+@notify_group.command("wizard")
+def notify_wizard():
+    """Launch the interactive terminal setup wizard for Discord and Telegram."""
+    from agentguard.notifications.wizard import launch_notification_wizard
+    launch_notification_wizard()
 
 
 @notify_group.command("test")
