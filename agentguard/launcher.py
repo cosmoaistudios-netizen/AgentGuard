@@ -114,7 +114,43 @@ class TerminalRawMode:
 
 
 def read_key(timeout: float = 0.1) -> str:
-    """Read a single key or resolve arrow key escape sequence."""
+    """Read a single key or resolve arrow key escape sequence (cross-platform POSIX and Win32)."""
+    # Windows native console input handling via msvcrt
+    if sys.platform == "win32" and sys.stdin.isatty():
+        try:
+            import msvcrt
+            start_t = time.time()
+            while time.time() - start_t < timeout:
+                if msvcrt.kbhit():
+                    ch = msvcrt.getch()
+                    if ch in (b"\x00", b"\xe0"):
+                        ch2 = msvcrt.getch()
+                        if ch2 == b"H":
+                            return "UP"
+                        elif ch2 == b"P":
+                            return "DOWN"
+                        elif ch2 == b"M":
+                            return "RIGHT"
+                        elif ch2 == b"K":
+                            return "LEFT"
+                        return ""
+                    if ch in (b"\r", b"\n"):
+                        return "ENTER"
+                    if ch == b" ":
+                        return "SPACE"
+                    if ch == b"\x03":
+                        return "CTRL_C"
+                    if ch == b"\x1b":
+                        return "ESC"
+                    try:
+                        return ch.decode("utf-8", errors="ignore")
+                    except Exception:
+                        return ""
+                time.sleep(0.01)
+            return ""
+        except ImportError:
+            pass
+
     if not HAS_TERMIOS or not sys.stdin.isatty():
         return ""
 

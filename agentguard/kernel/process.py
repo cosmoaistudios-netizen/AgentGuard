@@ -61,6 +61,30 @@ def _safe_memory_rss(proc: psutil.Process) -> int:
         return 0
 
 
+def _suspend_proc(proc: psutil.Process) -> None:
+    """Suspend process cross-platform (Win32 NtSuspendProcess via psutil, SIGSTOP on POSIX)."""
+    if sys.platform == "win32" or not hasattr(signal, "SIGSTOP"):
+        proc.suspend()
+    else:
+        proc.send_signal(signal.SIGSTOP)
+
+
+def _resume_proc(proc: psutil.Process) -> None:
+    """Resume process cross-platform (Win32 NtResumeProcess via psutil, SIGCONT on POSIX)."""
+    if sys.platform == "win32" or not hasattr(signal, "SIGCONT"):
+        proc.resume()
+    else:
+        proc.send_signal(signal.SIGCONT)
+
+
+def _kill_proc(proc: psutil.Process) -> None:
+    """Kill process cross-platform (Win32 TerminateProcess via psutil, SIGKILL on POSIX)."""
+    if sys.platform == "win32" or not hasattr(signal, "SIGKILL"):
+        proc.kill()
+    else:
+        proc.send_signal(signal.SIGKILL)
+
+
 def pause_process_tree(pid: int) -> bool:
     """
     Recursively pauses an entire process tree using SIGSTOP.
@@ -101,22 +125,22 @@ def pause_process_tree(pid: int) -> bool:
     for child in reversed(children):
         try:
             if child.is_running() and child.status() != psutil.STATUS_ZOMBIE:
-                child.send_signal(signal.SIGSTOP)
+                _suspend_proc(child)
         except (psutil.NoSuchProcess, psutil.ZombieProcess):
             continue
         except psutil.AccessDenied:
-            logger.warning("Access denied sending SIGSTOP to child PID %d", child.pid)
+            logger.warning("Access denied suspending child PID %d", child.pid)
 
     # 2. Suspend parent
     try:
         if parent.is_running() and parent.status() != psutil.STATUS_ZOMBIE:
-            parent.send_signal(signal.SIGSTOP)
+            _suspend_proc(parent)
             return True
         return False
     except (psutil.NoSuchProcess, psutil.ZombieProcess):
         return False
     except psutil.AccessDenied:
-        logger.warning("Access denied sending SIGSTOP to parent PID %d", pid)
+        logger.warning("Access denied suspending parent PID %d", pid)
         return False
 
 
@@ -160,25 +184,25 @@ def resume_process_tree(pid: int) -> bool:
     parent_resumed = False
     try:
         if parent.is_running() and parent.status() != psutil.STATUS_ZOMBIE:
-            parent.send_signal(signal.SIGCONT)
+            _resume_proc(parent)
             parent_resumed = True
         else:
             return False
     except (psutil.NoSuchProcess, psutil.ZombieProcess):
         return False
     except psutil.AccessDenied:
-        logger.warning("Access denied sending SIGCONT to parent PID %d", pid)
+        logger.warning("Access denied resuming parent PID %d", pid)
         return False
 
     # 2. Resume children
     for child in children:
         try:
             if child.is_running() and child.status() != psutil.STATUS_ZOMBIE:
-                child.send_signal(signal.SIGCONT)
+                _resume_proc(child)
         except (psutil.NoSuchProcess, psutil.ZombieProcess):
             continue
         except psutil.AccessDenied:
-            logger.warning("Access denied sending SIGCONT to child PID %d", child.pid)
+            logger.warning("Access denied resuming child PID %d", child.pid)
 
     return parent_resumed
 
@@ -222,7 +246,7 @@ def terminate_process_tree(pid: int, timeout: float = 2.0) -> bool:
             if p.is_running():
                 try:
                     if p.status() == psutil.STATUS_STOPPED:
-                        p.send_signal(signal.SIGCONT)
+                        _resume_proc(p)
                 except (psutil.Error, OSError):
                     pass
                 p.terminate()
@@ -240,10 +264,10 @@ def terminate_process_tree(pid: int, timeout: float = 2.0) -> bool:
             try:
                 if p.is_running():
                     try:
-                        p.send_signal(signal.SIGCONT)
+                        _resume_proc(p)
                     except (psutil.Error, OSError):
                         pass
-                    p.kill()
+                    _kill_proc(p)
             except (psutil.NoSuchProcess, psutil.ZombieProcess):
                 pass
             except (psutil.AccessDenied, OSError):

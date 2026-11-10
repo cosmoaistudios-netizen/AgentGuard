@@ -1,52 +1,162 @@
 # 🛡️ AgentGuard
 
-**OS-level zero-trust security kernel and daemon for autonomous AI agents.**
+```text
+   ___                    __   ______                     __
+  / _ | ___ ____ ___  ___/ /  / ____/_ _____ _________   / /
+ / __ |/ _ `/ -_) _ \/ _  /  / / _ / // / _ `/ __/ _  / /_/ 
+/_/ |_|\_, /\__/_//_/\_,_/   \___/ \_,_/\_,_/_/  \_,_/ (_)  
+      /___/                                                  
+                 made by Cosmo AI Studios
+```
 
-AgentGuard intercepts, classifies, and enforces security policies on every command an AI coding agent executes — before it touches your system. Think of it as a firewall that sits between AI agents (Claude Code, Cursor, Codex, Cline, etc.) and your operating system.
+**OS-level zero-trust security kernel and telemetry cockpit for autonomous AI coding agents.**
+
+AgentGuard intercepts, classifies, and enforces security policies on every command an AI coding agent executes — before it touches your system. Operating as a machine-wide security supervisor, AgentGuard creates an unbypassable boundary between autonomous agents (Antigravity, Claude Code, Cursor, Codex, Cline, Aider, Hermes, OpenClaw, etc.) and your operating system.
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-535%20passed-brightgreen.svg)](#testing)
+[![Tests](https://img.shields.io/badge/tests-541%20passed-brightgreen.svg)](#-testing)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows%20(Native%20%26%20WSL2)-blueviolet.svg)](#-cross-platform--universal-os-support)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support%20Our%20Work-orange?logo=buymeacoffee&logoColor=white)](https://buymeacoffee.com/cosmoai)
+[![Contact](https://img.shields.io/badge/contact-cosmoaistudios%40gmail.com-blue)](mailto:cosmoaistudios@gmail.com)
 
 ---
 
-## 🚀 Quick Start
+## 📸 Visual Tour
+
+Experience real-time AI security monitoring through AgentGuard's terminal cockpit and visual interfaces:
+
+### Terminal Cockpit TUI (`ag cockpit`)
+Live telemetry stream, connected agent swarm radar, intent drift meter, and emergency process kill switch:
+![AgentGuard Cockpit](assets/agentguard_cockpit.png)
+
+### Zero-Trust Command Interception & Telemetry Feed
+Live terminal interception displaying real-time session tracking, AST policy evaluation, and audit feeds:
+![AgentGuard Terminal](assets/agentguard_terminal.png)
+
+---
+
+## ⚡ Quick Start
 
 ```bash
-# Install
+# 1. Clone repository
+git clone https://github.com/cosmoaistudios-netizen/AgentGuard.git
+cd AgentGuard
+
+# 2. Install package in editable mode
 pip install -e .
 
-# Start the daemon
+# 3. Start the AgentGuard security daemon
 ag start
 
-# Wrap any AI agent with AgentGuard protection
-ag wrap claude
-ag wrap cursor
-ag wrap codex
+# 4. Wrap your autonomous AI agent with zero-trust protection
+ag wrap -- agy               # Antigravity agent
+ag wrap -- claude            # Claude Code CLI
+ag wrap -- cursor            # Cursor editor
 
-# Open the live monitoring cockpit
+# 5. Launch the live terminal cockpit
 ag cockpit
 
-# Open the web dashboard
-# → http://127.0.0.1:18443
+# 6. Access the Web DevSecOps Dashboard
+# → Open http://127.0.0.1:18443
 ```
+
+---
+
+## 💻 Agent Wrapping Command Guide
+
+AgentGuard uses the `--` token separator to cleanly pass execution arguments to target agent binaries. The security supervisor intercepts subprocess spawns, injects the zero-trust shell shims, configures dynamic linker hooks, and transparently routes LLM traffic through the local inspection proxy.
+
+### Supported Agent Commands
+
+```bash
+# Antigravity Agent (CLI / IDE)
+ag wrap -- agy
+ag wrap -- antigravity
+
+# Claude Code CLI
+ag wrap -- claude
+
+# Cursor Editor & Background Agents
+ag wrap -- cursor .
+
+# OpenAI Codex CLI
+ag wrap -- codex
+
+# Cline / Roo Code
+ag wrap -- cline
+
+# Aider Pair Programming
+ag wrap -- aider --model sonnet
+
+# Hermes Autonomous Agent
+ag wrap -- hermes
+
+# OpenClaw CLI
+ag wrap -- openclaw
+
+# Windsurf Editor
+ag wrap -- windsurf
+
+# Goose Developer Agent
+ag wrap -- goose session
+
+# Custom Python Scripts & Autonomous Workflows
+ag wrap -- python my_autonomous_agent.py
+ag wrap -- node runner.js
+```
+
+### Wrapping Flags & Options
+
+```bash
+# Enable interactive Human-In-The-Loop (HITL) prompt for dangerous mutations
+ag wrap --hitl -- agy
+
+# Force a specific security profile instead of auto-detection
+ag wrap --profile antigravity -- agy
+ag wrap --profile claude-code -- claude
+
+# Disable transparent LLM reverse proxy (proxy port 18443)
+ag wrap --no-llm-proxy -- aider
+
+# Custom daemon IPC socket location
+ag wrap --socket /tmp/agentguard-custom.sock -- agy
+```
+
+When no profile is explicitly specified, AgentGuard automatically detects the target agent from the binary name, script arguments, or `npx`/`uvx` runner and loads its customized security profile.
+
+---
+
+## 🌐 Cross-Platform & Universal OS Support
+
+AgentGuard is architected to run universally across **macOS**, **Linux**, and **Windows**:
+
+| Platform | Support Mode | Interception Architecture | Process Control Mechanism |
+|---|---|---|---|
+| **macOS** | Native | POSIX shell shim (`ag-sh`) + `DYLD_INSERT_LIBRARIES` | POSIX signals (`SIGSTOP`, `SIGCONT`, `SIGKILL`) |
+| **Linux** | Native | POSIX shell shim (`ag-sh`) + `LD_PRELOAD` | POSIX signals & `cgroups` isolation |
+| **Windows** | Native (Win32) | Portable Python fallback & `.cmd` batch wrappers | `psutil` Win32 Job API (`NtSuspendProcess`, `NtResumeProcess`, `TerminateProcess`) + `msvcrt` raw console input |
+| **Windows** | WSL2 | Full native POSIX shell shim & Unix sockets | Native Linux kernel primitives |
+
+### Native Windows Implementation Details
+- **Process Suspension & Kill Switch:** Windows systems lack native POSIX `SIGSTOP`/`SIGCONT` signals. AgentGuard's kernel layer uses `psutil` Win32 job object abstractions to pause, resume, and terminate child processes safely without leaving orphan worker processes.
+- **PowerShell & CMD Interception:** Shim directories install `.cmd` launchers alongside Python wrappers, routing intercepted binaries (`git`, `curl`, `rm`, `node`, `python`) directly into policy inspection before native Windows path resolution.
+- **Cockpit Console Navigation:** Full-screen terminal cockpit navigation on Windows automatically binds to `msvcrt` raw console key reading for arrow-key navigation and hotkey support (`[K]`, `[H]`, `[Q]`).
 
 ---
 
 ## 🏗️ Architecture
 
-AgentGuard operates as a machine-wide security kernel with four control planes:
-
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    AI Agent (Claude, Cursor, etc.)       │
+│              Autonomous AI Agent (Antigravity, etc.)    │
 │                         ↓ commands                      │
 │  ┌──────────────────────────────────────────────────┐   │
-│  │          POSIX Shell Shim (ag-sh)                │   │
+│  │          Cross-Platform Shell Shim               │   │
 │  │     AST parsing · regex classification           │   │
 │  │     < 1.5ms read-only fast pass                  │   │
 │  └──────────────┬───────────────────────────────────┘   │
-│                 ↓ IPC (Unix Socket / JSON-RPC)          │
+│                 ↓ IPC (Unix Domain Socket / Named Pipe) │
 │  ┌──────────────────────────────────────────────────┐   │
 │  │          AgentGuard Daemon                       │   │
 │  │  ┌─────────┐ ┌──────────┐ ┌───────────────┐     │   │
@@ -72,196 +182,162 @@ AgentGuard operates as a machine-wide security kernel with four control planes:
 
 ---
 
-## 🔑 Core Features
+## 🔑 Core Zero-Trust Pillars
 
-### 🔒 Zero-Trust Command Interception
-- **Shell Shim** — POSIX-compatible shell wrapper (`ag-sh`) that intercepts every command before execution
-- **AST + Regex Classifier** — Categorizes commands as `ALLOW`, `BLOCK`, `HITL` (human approval required), or `AUDIT`
-- **Read-Only Fast Pass** — Sub-1.5ms latency for safe read-only commands (`ls`, `cat`, `grep`)
+### 1. 🔒 Zero-Trust Command Interception
+- **Cross-Platform Shim** — Intercepts execution before binaries execute on the host OS.
+- **AST + Regex Classifier** — Evaluates command trees against four security classifications: `ALLOW`, `BLOCK`, `HITL` (human approval required), or `AUDIT`.
+- **Read-Only Fast Pass** — Sub-1.5ms overhead for safe exploratory commands (`ls`, `cat`, `grep`, `pwd`).
 
-### 🧬 Taint Tracking Engine
-- **Session-level taint propagation** — Automatically taints sessions that fetch external content (`curl`, `wget`, `git clone`)
-- **Taint DAG** — Directed acyclic graph tracking taint flow across processes and sessions
-- **Network egress lockdown** — Blocks outbound connections from tainted sessions to non-whitelisted domains
+### 2. 🧬 Taint Tracking DAG Engine
+- **Session-Level Taint Tracking** — Automatically taints sessions whenever an agent pulls unverified external content (`curl`, `wget`, `git clone`, external API responses).
+- **Directed Acyclic Graph (DAG)** — Tracks taint propagation across process trees, intermediate files, and child threads.
+- **Egress Confinement** — Blocks outbound connections from tainted sessions to prevent credential exfiltration.
 
-### 🔐 Secret Vault
-- **Automatic tokenization** — Detects API keys, database credentials, and high-entropy strings in-flight
-- **Ephemeral token replacement** — Replaces secrets with `<AG_VAULT_TOKEN_xx>` tokens in memory
-- **Selective detokenization** — Only de-vaults for whitelisted official API endpoints
+### 3. 🔐 In-Flight Secret Vault
+- **Entropy & Pattern Detection** — Identifies API keys, private certificates, and bearer tokens in real-time.
+- **Synthetic Token Replacement** — Swaps sensitive secrets with ephemeral `<AG_VAULT_TOKEN_xx>` tokens in memory.
+- **Strict Destination Whitelisting** — Detokenizes secrets only when requests target verified, whitelisted API endpoints.
 
-### 🧠 Intent Drift Detection
-- **Cosine similarity tracking** — Monitors whether an agent's actions drift from its stated goal
-- **Drift meter** — Real-time gauge: ≥ 0.65 Safe, < 0.65 Warning
+### 4. 🧠 Intent Drift Tracking
+- **Goal Alignment Verification** — Compares ongoing shell actions against the initial user objective using cosine similarity.
+- **Drift Radar** — Triggers administrative alerts if an agent drifts into unrelated directories or begins system-wide reconnaissance.
 
-### 🛑 Human-in-the-Loop (HITL)
-- **Approval workflow** — High-risk commands require explicit human approval before execution
-- **Terminal prompt** — `[A]llow once / [D]eny` directly in the agent's terminal
-- **Fail-closed timeout** — Unapproved commands are denied after configurable timeout
+### 5. 🛑 Human-in-the-Loop (HITL) Controls
+- **Interactive Prompt** — Displays `[A]llow once / [D]eny` prompts directly in the operator's terminal for high-impact mutations.
+- **Fail-Closed Guarantees** — If an operator does not respond within the timeout window, the command is denied automatically.
 
-### 🧱 Security Policy Engine
-- **Markdown-based policies** — Define security rules in `security_policy.md` with compliance mapping
-- **4-phase zero-trust model:**
-  - Phase 1: Core system & infrastructure protection (SOC2-CC6.1, ISO27001)
-  - Phase 2: Data exfiltration & network boundary defense (OWASP ASI01/ASI03)
-  - Phase 3: RAG & long-term memory guard (OWASP ASI06)
-  - Phase 4: Change management & environment isolation
-- **Specially banned commands** — Custom blocklist with per-rule compliance citations
+### 6. 🛡️ Memory & Vector DB Guard
+- **Sleeper Injection Defense** — Scans vector database writes and memory buffers to prevent prompt injection persistence across sessions.
+- **SHA-256 Provenance Stamping** — Cryptographically verifies memory chunk integrity and origin.
 
-### 🧬 Memory Guard
-- **Vector DB write inspection** — Quarantines sleeper prompt injections targeting RAG memory
-- **SHA-256 provenance stamping** — Cryptographic verification of memory chunk integrity
-
-### 🌐 MCP Gateway Proxy
-- **Tool-call inspection** — Intercepts Model Context Protocol tool calls before execution
-- **Schema validation** — Validates MCP tool arguments against security policies
-
-### 📊 Monitoring & Dashboards
-- **Web Dashboard** — Dark-theme DevSecOps dashboard on `127.0.0.1:18443` with live SSE telemetry
-- **Cockpit TUI** — Full-screen terminal UI (`ag cockpit`) with Rich-powered layout
-- **Swarm Radar** — Live table of connected agents with taint radiation meters
-- **Emergency Kill Switch** — `[K]` to pause/terminate/inspect any agent's process tree
-
-### 🔔 Notifications
-- **Discord & Telegram** — Real-time threat alerts for blocked commands, taint escalations, secret exfiltration attempts
-- **Health Heartbeat** — Periodic system telemetry summaries
-- **SIEM Forwarding** — Export audit logs to Splunk, ELK, or S3
+### 7. 🌐 MCP Gateway Proxy
+- **Tool-Call Inspection** — Transparently audits Model Context Protocol (MCP) JSON-RPC calls.
+- **Schema Validation** — Blocks unauthorized tool invocations and malformed parameter payloads.
 
 ---
 
-## 📦 Agent Profiles
+## 📦 Supported Agent Security Profiles
 
-AgentGuard ships with pre-configured security profiles for popular AI coding agents:
+AgentGuard includes tailored YAML security profiles in `agentguard/profiles/`:
 
-| Agent | Profile |
-|-------|---------|
-| Claude Code | `claude-code.yaml` |
-| Cursor | `cursor.yaml` |
-| Codex | `codex.yaml` |
-| Cline | `cline.yaml` |
-| Aider | `aider.yaml` |
-| Continue | `continue.yaml` |
-| Windsurf | `windsurf.yaml` |
-| OpenHands | `openhands.yaml` |
-| SWE-Agent | `swe-agent.yaml` |
-| CrewAI | `crewai.yaml` |
-| AutoGen | `autogen.yaml` |
-| Goose | `goose.yaml` |
-| Gemini CLI | `gemini-cli.yaml` |
-| Antigravity | `antigravity.yaml` |
-| Hermes | `hermes.yaml` |
-| Qwen Code | `qwen-code.yaml` |
-| OpenClaw | `openclaw.yaml` |
-| Generic | `generic.yaml` |
+| Agent / Framework | Profile File | Default Policy Highlights |
+|---|---|---|
+| **Antigravity** | `antigravity.yaml` | Full IDE protection, workspace confinement, safe command passthrough |
+| **Claude Code** | `claude-code.yaml` | Anthropic endpoint detokenization, git command auditing |
+| **Cursor** | `cursor.yaml` | Language server protection, workspace-only disk writes |
+| **Codex** | `codex.yaml` | Python runtime isolation, external network lockdown |
+| **Cline / Roo Code** | `cline.yaml` | Shell execution sandboxing, credential masking |
+| **Aider** | `aider.yaml` | Automated git commit auditing, diff verification |
+| **Hermes** | `hermes.yaml` | Autonomous execution guardrails, egress filtering |
+| **OpenClaw** | `openclaw.yaml` | Subprocess tree supervision, prompt-injection defense |
+| **Windsurf** | `windsurf.yaml` | Cascade tool-call monitoring, filesystem write validation |
+| **Goose** | `goose.yaml` | Extension tool authorization, bash shim interception |
+| **Generic Agent** | `generic.yaml` | Conservative zero-trust baseline for arbitrary AI agent scripts |
 
 ---
 
 ## 🖥️ CLI Reference
 
-```bash
-ag start                    # Start the AgentGuard daemon
-ag stop                     # Stop the daemon
-ag status                   # Show daemon status and connected agents
-ag wrap <agent>             # Wrap an AI agent with AgentGuard protection
-ag cockpit                  # Open the terminal monitoring cockpit
-ag notify setup             # Configure Discord/Telegram notifications
-ag notify test              # Send a test alert
-ag siem setup               # Configure SIEM log forwarding
-```
+| Command | Description |
+|---|---|
+| `ag start` | Start the AgentGuard background daemon |
+| `ag stop` | Stop the running daemon cleanly |
+| `ag status` | Display daemon status, socket health, and connected agent sessions |
+| `ag wrap -- <cmd>` | Wrap an agent command with AgentGuard interception and proxying |
+| `ag cockpit` | Launch the real-time terminal monitoring cockpit (TUI) |
+| `ag notify setup` | Interactively configure Discord / Telegram security alert webhooks |
+| `ag notify test` | Send a synthetic threat alert to configured notification channels |
+| `ag siem setup` | Configure Splunk, ELK, or S3 enterprise log export |
 
 ---
 
 ## 🧪 Testing
 
-AgentGuard has a comprehensive test suite with 535 tests across unit and end-to-end tiers:
+AgentGuard maintains a comprehensive, zero-compromise test suite of **541 tests** covering all security tiers:
 
 ```bash
-# Run all tests
-pytest -v
+# Run entire test suite
+pytest -q
 
-# Unit tests only
+# Run unit tests only
 pytest tests/unit/ -v
 
-# End-to-end tests (5 tiers)
+# Run end-to-end tiers
 pytest tests/e2e/ -v
 ```
 
-### Test Tiers
-- **Tier 1:** Feature coverage (core requirements R1–R5)
-- **Tier 2:** Boundary and edge case testing
-- **Tier 3:** Pairwise interaction testing
-- **Tier 4:** Real-world scenario simulation
-- **Tier 5:** Adversarial hardening and stress testing
+### Test Coverage Tiers
+- **Tier 1:** Core Functional Requirements (R1–R5: shims, vault, taint engine, CLI, policy engine)
+- **Tier 2:** Boundaries & Adversarial Edge Cases (deep subshells, huge payloads, false positive filters)
+- **Tier 3:** Pairwise Subsystem Interaction (taint + shell shim, vault + egress, proxy + audit)
+- **Tier 4:** Real-World Agent Simulation (multi-agent swarms, workspace mutation, prompt injection)
+- **Tier 5:** Adversarial Stress & Chaos Hardening (socket bursts, kill switch responsiveness, race conditions)
 
 ---
 
-## 📁 Project Structure
+## 📁 Repository Structure
 
 ```
-agentguard/
-├── __init__.py
-├── cli.py                          # CLI entry point
-├── config.py                       # Configuration management
-├── launcher.py                     # Smart launcher with auto-detection
-├── daemon/
-│   ├── server.py                   # Unix socket + HTTP daemon
-│   ├── audit.py                    # Dual-tier audit logging
-│   ├── command_classifier.py       # AST + regex command classification
-│   ├── intent.py                   # Intent drift tracker
-│   ├── memory_guard.py             # Vector DB write inspector
-│   ├── policy_engine.py            # Markdown security policy parser
-│   ├── process_control.py          # Process tree supervision
-│   ├── taint_engine.py             # Session taint DAG
-│   ├── vault.py                    # Secret tokenization vault
-│   └── dashboard.html              # Embedded web dashboard
-├── interceptors/
-│   ├── shell_shim.py               # POSIX shell command interceptor
-│   ├── fs_guard.py                 # Filesystem write guard
-│   ├── mcp_gateway.py              # MCP tool-call proxy
-│   ├── mcp_proxy.py                # MCP schema validator
-│   └── shim_binary/                # C source for native shell shim
-├── cockpit/
-│   ├── app.py                      # Rich TUI cockpit layout
-│   ├── radar.py                    # Swarm radar widget
-│   ├── drift_meter.py              # Intent drift gauge
-│   ├── telemetry_feed.py           # Live log feed
-│   ├── kill_switch.py              # Emergency process control
-│   └── client.py                   # Daemon IPC client
-├── notifications/
-│   ├── dispatcher.py               # Async alert queue
-│   ├── discord.py                  # Discord webhook integration
-│   ├── telegram.py                 # Telegram bot integration
-│   ├── heartbeat.py                # Periodic health summary
-│   └── config.py                   # Credential management
-├── exporters/
-│   └── siem_forwarder.py           # Splunk/ELK/S3 log export
-├── profiles/                       # Per-agent YAML security profiles
-└── web/
-    └── dashboard.html              # Standalone web dashboard
+AgentGuard/
+├── assets/
+│   ├── agentguard_cockpit.png          # Cockpit TUI screenshot
+│   └── agentguard_terminal.png         # Terminal launcher screenshot
+├── agentguard/
+│   ├── branding.py                     # ASCII logo & Cosmo AI Studios branding
+│   ├── cli.py                          # Unified CLI entry point (`ag`)
+│   ├── launcher.py                     # Smart interactive launcher with auto-detection
+│   ├── kernel/
+│   │   └── process.py                  # Cross-platform process management (Win32 & POSIX)
+│   ├── daemon/
+│   │   ├── server.py                   # IPC daemon (socket + HTTP server)
+│   │   ├── audit.py                    # Dual-tier audit logger
+│   │   ├── command_classifier.py       # AST & regex command classifier
+│   │   ├── intent.py                   # Intent drift tracker
+│   │   ├── memory_guard.py             # Memory & vector DB inspector
+│   │   ├── policy_engine.py            # Markdown security policy parser
+│   │   ├── taint_engine.py             # Session taint propagation DAG
+│   │   └── vault.py                    # In-flight secret vault & tokenization
+│   ├── interceptors/
+│   │   ├── shell_shim.py               # Shell interceptor & shim manager
+│   │   ├── fs_guard.py                 # Filesystem write guard
+│   │   └── mcp_gateway.py              # MCP tool-call reverse proxy
+│   ├── cockpit/
+│   │   ├── app.py                      # Terminal cockpit TUI layout
+│   │   ├── radar.py                    # Swarm radar widget
+│   │   ├── drift_meter.py              # Intent drift gauge
+│   │   └── kill_switch.py              # Emergency process control modal
+│   ├── notifications/
+│   │   ├── discord.py                  # Discord webhook dispatcher
+│   │   └── telegram.py                 # Telegram bot alert dispatcher
+│   └── profiles/                       # Agent-specific YAML security profiles
+├── security_policy.md                  # Human-readable reference security policy
+├── pyproject.toml                      # Modern PEP 621 build configuration
+├── setup.py                            # Backward-compatible setup script
+└── tests/                              # 541 automated unit and E2E tests
 ```
 
 ---
 
-## 📋 Security Policy
+## ☕ Support Our Work
 
-Define custom security rules in `security_policy.md` at the project root. The policy engine supports:
+If AgentGuard helps secure your autonomous AI workflows, please consider supporting continued open-source research and engineering:
 
-- **Compliance framework mapping** — SOC2, ISO27001, PCI-DSS, GDPR, OWASP ASI
-- **Condition expressions** — Context-aware rules (taint state, time of day, environment)
-- **Specially banned commands** — Custom blocklist with rule IDs and rationale
-- **4-phase zero-trust model** — From infrastructure protection to change management
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support%20Our%20Work-orange?style=for-the-badge&logo=buymeacoffee&logoColor=white)](https://buymeacoffee.com/cosmoai)
 
-See [`security_policy.md`](security_policy.md) for the full reference policy.
+**Buy Me a Coffee:** [https://buymeacoffee.com/cosmoai](https://buymeacoffee.com/cosmoai)
 
 ---
 
-## 🔧 Requirements
+## 📬 Contact & Inquiries
 
-- Python 3.9+
-- macOS or Linux
-- Dependencies: `click`, `pydantic`, `pyyaml`, `rich`, `watchfiles`, `numpy`
+- **Author & Organization:** Cosmo AI Studios
+- **Email:** [cosmoaistudios@gmail.com](mailto:cosmoaistudios@gmail.com)
+- **Repository:** [https://github.com/cosmoaistudios-netizen/AgentGuard](https://github.com/cosmoaistudios-netizen/AgentGuard)
 
 ---
 
 ## 📜 License
 
-Apache License 2.0 — See [LICENSE](LICENSE) for details.
+Licensed under the [Apache License, Version 2.0](LICENSE).
+Copyright © 2026 Cosmo AI Studios.

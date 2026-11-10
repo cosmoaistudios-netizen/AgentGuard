@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "Apache-2.0" }
 authors = [
-    { name = "AgentGuard Authors", email = "maintainers@agentguard.dev" }
+    { name = "Cosmo AI Studios", email = "cosmoaistudios@gmail.com" }
 ]
 keywords = [
     "security",

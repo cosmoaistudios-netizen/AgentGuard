@@ -16,6 +16,7 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import sys
 from typing import Dict, List, Optional, Tuple, Union
 
 # Intercepted binary names symlinked to ag-sh
@@ -374,8 +375,16 @@ class ShimManager:
             "        if s_dir and (os.path.realpath(d) == os.path.realpath(s_dir)):\n"
             "            continue\n"
             "        cand = os.path.join(d, bin_name)\n"
-            "        if os.path.isfile(cand) and os.access(cand, os.X_OK):\n"
-            "            os.execv(cand, [cand] + target_argv[1:])\n"
+            "        candidates = [cand]\n"
+            "        if sys.platform == 'win32':\n"
+            "            candidates.extend([cand + ext for ext in ('.exe', '.cmd', '.bat', '.ps1')])\n"
+            "        for c in candidates:\n"
+            "            if os.path.isfile(c) and (sys.platform == 'win32' or os.access(c, os.X_OK)):\n"
+            "                if sys.platform == 'win32':\n"
+            "                    import subprocess\n"
+            "                    sys.exit(subprocess.call([c] + target_argv[1:]))\n"
+            "                else:\n"
+            "                    os.execv(c, [c] + target_argv[1:])\n"
             "    sys.stderr.write(f'[AgentGuard] Error: Real binary {bin_name!r} not found in PATH.\\n')\n"
             "    sys.exit(127)\n"
             "\n"
@@ -415,6 +424,17 @@ class ShimManager:
             except OSError:
                 pass
 
+        # 3. Create Windows batch wrappers when running on win32
+        if sys.platform == "win32":
+            py_runner = sys.executable
+            py_script = str(self.shim_dir / "ag-sh.py")
+            for binary in INTERCEPTED_BINARIES:
+                cmd_path = self.shim_dir / f"{binary}.cmd"
+                try:
+                    cmd_path.write_text(f'@echo off\n"{py_runner}" "{py_script}" %*\n', encoding="utf-8")
+                except OSError:
+                    pass
+
         return self.shim_dir
 
     def get_env(
@@ -433,8 +453,8 @@ class ShimManager:
         orig_path = env.get("PATH", "")
         shim_dir_str = str(self.shim_dir)
 
-        # Prepend shim directory to PATH
-        env["PATH"] = f"{shim_dir_str}:{orig_path}"
+        # Prepend shim directory to PATH (cross-platform pathsep)
+        env["PATH"] = f"{shim_dir_str}{os.pathsep}{orig_path}"
         env["AGENTGUARD_SESSION_ID"] = session_id
         env["AGENTGUARD_SOCKET"] = self.socket_path
         env["AGENTGUARD_ORIGINAL_PATH"] = orig_path
