@@ -54,10 +54,13 @@ ag wrap -- agy               # Antigravity agent
 ag wrap -- claude            # Claude Code CLI
 ag wrap -- cursor            # Cursor editor
 
-# 5. Launch the live terminal cockpit
+# 5. Interactively configure Discord & Telegram threat alert channels
+ag notify wizard
+
+# 6. Launch the live terminal cockpit
 ag cockpit
 
-# 6. Access the Web DevSecOps Dashboard
+# 7. Access the Web DevSecOps Dashboard
 # → Open http://127.0.0.1:18443
 ```
 
@@ -214,6 +217,11 @@ AgentGuard is architected to run universally across **macOS**, **Linux**, and **
 ### 7. 🌐 MCP Gateway Proxy
 - **Tool-Call Inspection** — Transparently audits Model Context Protocol (MCP) JSON-RPC calls.
 - **Schema Validation** — Blocks unauthorized tool invocations and malformed parameter payloads.
+
+### 8. 🔔 Real-Time Notifications & Health Sentinel
+- **Terminal Setup Wizard (`ag notify wizard`)** — Guided interactive CLI configuration for Discord Webhooks and Telegram Bots with instant live delivery testing.
+- **Immediate Threat Alerts** — Push alerts for blocked commands, taint escalations, secret exfiltration attempts, and critical intent drift.
+- **Scheduled Health Heartbeats** — Automated telemetry reporting daemon health, active/tainted agent swarms, vaulted secrets, and memory consumption.
 
 ---
 
