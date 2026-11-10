@@ -47,7 +47,7 @@ cd AgentGuard
 pip install -e .
 
 # 3. Start the AgentGuard security daemon
-ag start
+ag daemon start
 
 # 4. Wrap your autonomous AI agent with zero-trust protection
 ag wrap -- agy               # Antigravity agent
@@ -241,8 +241,8 @@ AgentGuard includes tailored YAML security profiles in `agentguard/profiles/`:
 
 | Command | Description |
 |---|---|
-| `ag start` | Start the AgentGuard background daemon |
-| `ag stop` | Stop the running daemon cleanly |
+| `ag daemon start` | Start the AgentGuard background daemon |
+| `ag daemon stop` | Stop the running daemon cleanly |
 | `ag status` | Display daemon status, socket health, and connected agent sessions |
 | `ag wrap -- <cmd>` | Wrap an agent command with AgentGuard interception and proxying |
 | `ag cockpit` | Launch the real-time terminal monitoring cockpit (TUI) |
